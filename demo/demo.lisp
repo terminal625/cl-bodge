@@ -15,6 +15,7 @@
   (gl:clear :color-buffer)
   (ge:swap-buffers))
 
+
 (defmethod ge:initialize-system :after ((this demo))
   (ge:run (flow:serially
            (ge:for-host ()
@@ -24,6 +25,10 @@
              (ge:for-graphics ()
                (render this)))
             (lambda () (ge:enabledp this))))))
+
+
+(ge:define-event-handler exit-handler ((eve ge:viewport-hiding-event))
+  (ge:shutdown))
 
 
 (defun run ()
