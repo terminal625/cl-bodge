@@ -25,8 +25,9 @@
 
 (ge:defwindow (main-menu
                (:title "Main Menu")
+               (:origin 100 100)
                (:width 200) (:height 200)
-               (:options :resizable))
+               (:options :scrollable))
   (ge:vertical-layout
    :row-height 32
    (ge:button :label "Audio")
