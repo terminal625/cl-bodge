@@ -27,9 +27,13 @@
                (:title "Main Menu")
                (:origin 100 100)
                (:width 200) (:height 200)
-               (:options :scrollable))
-  (ge:vertical-layout
-   :row-height 32
+               (:options :scrollable :movable :resizable))
+  (ge:vertical-layout :row-height 32
+   (ge:combo-box :label "Boxy"
+    (ge:vertical-layout :row-height 150
+     (ge:color-picker))
+    (ge:vertical-layout :row-height 32
+     (ge:float-property :label "R:")))
    (ge:button :label "Audio")
    (ge:button :label "3D Physics")
    (ge:button :label "2D Physics")))
