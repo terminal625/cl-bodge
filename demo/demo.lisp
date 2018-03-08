@@ -25,15 +25,11 @@
 
 (ge:defwindow (main-menu
                (:title "Main Menu")
-               (:origin 100 100)
-               (:width 200) (:height 200)
-               (:options :scrollable :movable :resizable))
-  (ge:vertical-layout :row-height 32
-   (ge:combo-box :label "Boxy"
-    (ge:vertical-layout :row-height 150
-     (ge:color-picker))
-    (ge:vertical-layout :row-height 32
-     (ge:float-property :label "R:")))
+               (:width 150) (:height 480)
+               (:options :scrollable))
+  (ge:vertical-layout
+   :row-height 26
+   (ge:option :label "Option")
    (ge:button :label "Audio")
    (ge:button :label "3D Physics")
    (ge:button :label "2D Physics")))
