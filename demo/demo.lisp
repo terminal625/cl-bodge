@@ -23,6 +23,19 @@
     (ge:swap-buffers)))
 
 
+(defclass custom (ge:custom-widget) ())
+
+
+(defmethod ge:render-widget ((this custom) origin width height)
+  (ge:draw-rect origin width height :fill-paint (ge:vec4 0.0 0.0 0.0 1.0))
+  (ge:draw-text (ge:add origin 8) "Hello Widget" :fill-color (ge:vec4 1.0 1.0 1.0 1.0)))
+
+
+(let ((output *standard-output*))
+  (defmethod ge:update-widget ((this custom))
+    (format output "~&update called")))
+
+
 (ge:defwindow (main-menu
                (:title "Main Menu")
                (:width 150) (:height 480)
@@ -32,7 +45,8 @@
    (ge:option :label "Option")
    (ge:button :label "Audio")
    (ge:button :label "3D Physics")
-   (ge:button :label "2D Physics")))
+   (ge:button :label "2D Physics")
+   (custom)))
 
 
 (defun init-graphics (this)
