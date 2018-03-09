@@ -38,6 +38,23 @@
 
 
 
+(let ((output *standard-output*))
+  (defun on-hover (window event)
+    (declare (ignore window event))
+    (format output "~&hovering"))
+  (defun on-leave (window event)
+    (declare (ignore window event))
+    (format output "~&leaving"))
+  (defun on-click (window event)
+    (declare (ignore window))
+    (format output "~&~A clicked" (ge:button-from event)))
+  (defun on-mouse-press (window event)
+    (declare (ignore window))
+    (format output "~&~A pressed" (ge:button-from event)))
+  (defun on-mouse-release (window event)
+    (declare (ignore window))
+    (format output "~&~A released" (ge:button-from event))))
+
 
 (ge:defwindow (main-menu
                (:title "Main Menu")
@@ -54,7 +71,11 @@
   (ge:button :label "Audio")
   (ge:button :label "3D Physics")
   (ge:button :label "2D Physics")
-  (custom))
+  (custom :on-hover #'on-hover
+          :on-leave #'on-leave
+          :on-click #'on-click
+          :on-mouse-press #'on-mouse-press
+          :on-mouse-release #'on-mouse-release))
 
 
 (defun init-graphics (this)
