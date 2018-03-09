@@ -26,20 +26,23 @@
 (defclass custom (ge:custom-widget) ())
 
 
-(defmethod ge:render-widget ((this custom) origin width height)
-  (ge:draw-rect origin width height :fill-paint (ge:vec4 0.0 0.0 0.0 1.0))
+(defmethod ge:render-custom-widget ((this custom) origin width height)
+  (ge:draw-rect origin width height
+                :fill-paint (cond
+                              ((and (ge:custom-widget-hovered-p this)
+                                    (ge:custom-widget-pressed-p this :left))
+                               (ge:vec4 0.3 0.3 0.3 1.0))
+                              ((ge:custom-widget-hovered-p this) (ge:vec4 0.5 0.5 0.5 1.0))
+                              (t (ge:vec4 0.0 0.0 0.0 1.0))))
   (ge:draw-text (ge:add origin (ge:vec2 12 9)) "Hello Widget" :fill-color (ge:vec4 1.0 1.0 1.0 1.0)))
 
 
-(let ((output *standard-output*))
-  (defmethod ge:update-widget ((this custom))
-    (format output "~&update called")))
 
 
 (ge:defwindow (main-menu
                (:title "Main Menu")
                (:width 150) (:height 480)
-               (:options :scrollable :resizable))
+               (:options :scrollable :movable :resizable))
   (ge:horizontal-layout
    (ge:vertical-layout
     (ge:option :label "Option 1")
