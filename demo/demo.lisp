@@ -28,7 +28,7 @@
 
 (defmethod ge:render-widget ((this custom) origin width height)
   (ge:draw-rect origin width height :fill-paint (ge:vec4 0.0 0.0 0.0 1.0))
-  (ge:draw-text (ge:add origin 8) "Hello Widget" :fill-color (ge:vec4 1.0 1.0 1.0 1.0)))
+  (ge:draw-text (ge:add origin (ge:vec2 12 9)) "Hello Widget" :fill-color (ge:vec4 1.0 1.0 1.0 1.0)))
 
 
 (let ((output *standard-output*))
@@ -39,14 +39,19 @@
 (ge:defwindow (main-menu
                (:title "Main Menu")
                (:width 150) (:height 480)
-               (:options :scrollable))
-  (ge:vertical-layout
-   :row-height 26
-   (ge:option :label "Option")
-   (ge:button :label "Audio")
-   (ge:button :label "3D Physics")
-   (ge:button :label "2D Physics")
-   (custom)))
+               (:options :scrollable :resizable))
+  (ge:horizontal-layout
+   (ge:vertical-layout
+    (ge:option :label "Option 1")
+    (ge:option :label "Option 2"))
+   (ge:vertical-layout
+    (ge:label :text "yo")
+    (ge:label :text "hallo")
+    (ge:label :text "there")))
+  (ge:button :label "Audio")
+  (ge:button :label "3D Physics")
+  (ge:button :label "2D Physics")
+  (custom))
 
 
 (defun init-graphics (this)
