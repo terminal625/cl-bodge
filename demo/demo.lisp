@@ -64,4 +64,5 @@
 
 
 (defun run ()
-  (ge:startup `(:engine (:systems (demo)))))
+  (ge:startup `(:engine (:systems (demo))
+                :host (:opengl-version (3 3)))))
