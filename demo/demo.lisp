@@ -65,6 +65,9 @@
     (ge:option :label "Option 1")
     (ge:option :label "Option 2"))
    (ge:vertical-layout
+    (ge:option :label "Option 3" :width 100)
+    (ge:option :label "Option 4"))
+   (ge:vertical-layout
     (ge:label :text "yo")
     (ge:label :text "hallo")
     (ge:label :text "there")))
