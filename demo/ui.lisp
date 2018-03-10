@@ -43,15 +43,15 @@
   (ge:label :text "Nested:")
   (ge:horizontal-layout
    (ge:vertical-layout
-    (ge:option :label "Option 1")
-    (ge:option :label "Option 2"))
+    (ge:radio :label "Option 1")
+    (ge:radio :label "Option 2"))
    (ge:vertical-layout
-    (ge:option :label "Option 3" :width 100)
-    (ge:option :label "Option 4"))
+    (ge:check-box :label "Check 1" :width 100)
+    (ge:check-box :label "Check 2"))
    (ge:vertical-layout
-    (ge:label :text "Awesomely")
-    (ge:label :text "Stacked")
-    (ge:label :text "Labels")))
+    (ge:label :text "Awesomely" :align :left)
+    (ge:label :text "Stacked" :align :middle)
+    (ge:label :text "Labels" :align :right)))
   (ge:label :text "Expand by width:")
   (ge:horizontal-layout
      (ge:button :label "Dynamic")
