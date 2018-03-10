@@ -1,12 +1,8 @@
-(cl:defpackage :cl-bodge.demo
-  (:use :cl)
-  (:export #:run))
 (cl:in-package :cl-bodge.demo)
 
 
 (defclass demo (ge:enableable ge:generic-system)
   (ui
-   canvas
    window-width
    window-height
    pixel-ratio)
@@ -14,81 +10,30 @@
 
 
 (defun render (demo)
-  (with-slots (canvas ui) demo
+  (with-slots (ui) demo
     (gl:clear-color 1.0 1.0 1.0 1.0)
     (gl:clear :color-buffer)
-    (ge:with-canvas (canvas)
-      (ge:draw-text (ge:vec2 100 100) "HOLY SHIT"))
     (ge:compose-ui ui)
     (ge:swap-buffers)))
-
-
-(defclass custom (ge:custom-widget) ())
-
-
-(defmethod ge:render-custom-widget ((this custom) origin width height)
-  (ge:draw-rect origin width height
-                :fill-paint (cond
-                              ((and (ge:custom-widget-hovered-p this)
-                                    (ge:custom-widget-pressed-p this :left))
-                               (ge:vec4 0.3 0.3 0.3 1.0))
-                              ((ge:custom-widget-hovered-p this) (ge:vec4 0.5 0.5 0.5 1.0))
-                              (t (ge:vec4 0.0 0.0 0.0 1.0))))
-  (ge:draw-text (ge:add origin (ge:vec2 12 9)) "Hello Widget" :fill-color (ge:vec4 1.0 1.0 1.0 1.0)))
-
-
-
-(let ((output *standard-output*))
-  (defun on-hover (window event)
-    (declare (ignore window event))
-    (format output "~&hovering"))
-  (defun on-leave (window event)
-    (declare (ignore window event))
-    (format output "~&leaving"))
-  (defun on-click (window event)
-    (declare (ignore window))
-    (format output "~&~A clicked" (ge:button-from event)))
-  (defun on-mouse-press (window event)
-    (declare (ignore window))
-    (format output "~&~A pressed" (ge:button-from event)))
-  (defun on-mouse-release (window event)
-    (declare (ignore window))
-    (format output "~&~A released" (ge:button-from event))))
 
 
 (ge:defwindow (main-menu
                (:title "Main Menu")
                (:width 150) (:height 480)
-               (:options :scrollable :movable :resizable))
-  (ge:horizontal-layout
-   (ge:vertical-layout
-    (ge:option :label "Option 1")
-    (ge:option :label "Option 2"))
-   (ge:vertical-layout
-    (ge:option :label "Option 3" :width 100)
-    (ge:option :label "Option 4"))
-   (ge:vertical-layout
-    (ge:label :text "yo")
-    (ge:label :text "hallo")
-    (ge:label :text "there")))
+               (:options :scrollable))
   (ge:button :label "Audio")
   (ge:button :label "3D Physics")
   (ge:button :label "2D Physics")
-  (custom :on-hover #'on-hover
-          :on-leave #'on-leave
-          :on-click #'on-click
-          :on-mouse-press #'on-mouse-press
-          :on-mouse-release #'on-mouse-release))
+  (ge:button :label "UI" :on-click #'open-ui-demo-window))
 
 
 (defun init-graphics (this)
-  (with-slots (ui canvas window-width window-height pixel-ratio) this
+  (with-slots (ui window-width window-height pixel-ratio) this
     (let ((input-source (ge:make-host-input-source)))
       (ge:attach-host-input-source input-source)
-      (setf canvas (ge:make-canvas window-width window-height)
-            ui (ge:make-ui window-width window-height :input-source input-source
+      (setf ui (ge:make-ui window-width window-height :input-source input-source
                                                       :pixel-ratio pixel-ratio))
-      (ge:add-window 'main-menu ui :origin (ge:vec2 100 100)))))
+      (ge:add-window 'main-menu :ui ui :origin (ge:vec2 100 100)))))
 
 
 (defun init-host (this)
