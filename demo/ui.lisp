@@ -33,6 +33,7 @@
     (declare (ignore window))
     (format output "~&~A released" (ge:button-from event))))
 
+
 (ge:defwindow (ui-demo-window
                (:title "UI Demo")
                (:origin 200 50)
@@ -42,9 +43,9 @@
                          :closable))
   (ge:label :text "Nested:")
   (ge:horizontal-layout
-   (ge:vertical-layout
+   (ge:radio-group
     (ge:radio :label "Option 1")
-    (ge:radio :label "Option 2"))
+    (ge:radio :label "Option 2" :activated t))
    (ge:vertical-layout
     (ge:check-box :label "Check 1" :width 100)
     (ge:check-box :label "Check 2"))
