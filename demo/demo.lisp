@@ -5,35 +5,48 @@
   (ui
    window-width
    window-height
-   pixel-ratio)
-  (:default-initargs :depends-on '(ge:host-system ge:graphics-system ge:audio-system)))
+   pixel-ratio
+   (active-showcase :initform nil))
+  (:default-initargs :depends-on '(ge:host-system ge:physics-system
+                                   ge:graphics-system ge:audio-system)))
 
 
 (defun render (demo)
-  (with-slots (ui) demo
+  (with-slots (ui active-showcase) demo
     (gl:clear-color 1.0 1.0 1.0 1.0)
     (gl:clear :color-buffer)
     (ge:compose-ui ui)
+    (when active-showcase
+      (render-showcase active-showcase))
     (ge:swap-buffers)))
 
 
 (ge:defwindow (main-menu
                (:title "Main Menu")
                (:width 150) (:height 480)
-               (:options :scrollable))
-  (ge:button :label "Audio")
-  (ge:button :label "3D Physics")
-  (ge:button :label "2D Physics")
-  (ge:button :label "UI" :on-click #'open-ui-demo-window))
+               (:options :scrollable)))
 
 
 (defun init-graphics (this)
-  (with-slots (ui window-width window-height pixel-ratio) this
+  (with-slots (ui window-width window-height pixel-ratio active-showcase) this
     (let ((input-source (ge:make-host-input-source)))
       (ge:attach-host-input-source input-source)
       (setf ui (ge:make-ui window-width window-height :input-source input-source
                                                       :pixel-ratio pixel-ratio))
-      (ge:add-window 'main-menu :ui ui :origin (ge:vec2 100 100)))))
+      (let ((main-window (ge:add-window 'main-menu :ui ui :origin (ge:vec2 100 100))))
+        (loop for case-class in (list-showcases)
+              do (let ((showcase (make-instance case-class)))
+                   (flet ((switch-showcase (win event)
+                            (declare (ignore win event))
+                            (ge:run (ge:>> (when active-showcase
+                                             (showcase-closing-flow active-showcase))
+                                           (showcase-revealing-flow showcase ui)
+                                           (ge:instantly ()
+                                             (setf active-showcase showcase))))))
+                     (let ((button (make-instance 'ge:button
+                                                  :label (showcase-name showcase)
+                                                  :on-click #'switch-showcase)))
+                       (ge:adopt main-window button)))))))))
 
 
 (defun init-host (this)

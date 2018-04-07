@@ -15,7 +15,6 @@
   (ge:draw-text (ge:add origin (ge:vec2 12 9)) "Hello Widget" :fill-color (ge:vec4 1.0 1.0 1.0 1.0)))
 
 
-
 (let ((output *standard-output*))
   (defun on-hover (window event)
     (declare (ignore window event))
@@ -76,6 +75,31 @@
   (ge:remove-window this))
 
 
-(defun open-ui-demo-window (menu event)
-  (declare (ignore menu event))
-  (ge:add-window 'ui-demo-window))
+;;;
+;;; UI Showcase
+;;;
+(defclass ui-showcase ()
+  ((window :initform nil)
+   (ui :initform nil)))
+(register-showcase 'ui-showcase)
+
+
+(defmethod showcase-name ((this ui-showcase))
+  "UI")
+
+
+(defmethod showcase-revealing-flow ((this ui-showcase) ui)
+  (with-slots (window (this-ui ui)) this
+    (ge:instantly ()
+      (ge:with-ui-access (ui)
+        (setf this-ui ui
+              window (ge:add-window 'ui-demo-window))))))
+
+
+(defmethod showcase-closing-flow ((this ui-showcase))
+  (with-slots (window ui) this
+    (ge:instantly ()
+      (ge:with-ui-access (ui)
+        (ge:remove-window window)
+        (setf window nil
+              ui nil)))))
