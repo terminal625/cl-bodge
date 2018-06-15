@@ -3,7 +3,6 @@
 (cl:in-package :cl-bodge.physics.demo)
 
 
-(defparameter *unit-scale* 0.1)
 (defparameter *ball-radius* 5)
 (defparameter *ball-position* (ge:vec2 0 15))
 (defparameter *ground-position* (list (ge:vec2 -10 5) (ge:vec2 20 -5)))
@@ -76,7 +75,7 @@
 
 
 (defun translate-canvas-for (shape)
-  (let ((translation (ge:div (ge:body-position (ge:shape-body shape)) *unit-scale*)))
+  (let ((translation (ge:body-position (ge:shape-body shape))))
     (ge:translate-canvas (ge:x translation) (ge:y translation))))
 
 
@@ -88,19 +87,17 @@
 (defun draw-circle (shape)
   (ge:with-pushed-canvas ()
     (transform-canvas-for shape)
-    (let* ((radius (/ *ball-radius* *unit-scale*))
-           (r/4 (/ radius 4)))
-      (ge:draw-circle (ge:vec2 0 0) radius :fill-paint (ge:vec4 0 0 0 1))
+    (let* ((r/4 (/ *ball-radius* 4)))
+      (ge:draw-circle (ge:vec2 0 0) *ball-radius* :fill-paint (ge:vec4 0 0 0 1))
       (ge:draw-rect (ge:vec2 (- (/ r/4 2)) 0) r/4 (* 3 r/4) :fill-paint (ge:vec4 1 1 1 1)))))
 
 
 (defun draw-box (shape)
   (ge:with-pushed-canvas ()
     (transform-canvas-for shape)
-    (ge:draw-rect (ge:div (ge:vec2 (- (/ *box-width* 2)) (- (/ *box-height* 2))) *unit-scale*)
-                        (/ *box-width* *unit-scale*)
-                        (/ *box-height* *unit-scale*)
-                        :fill-paint (ge:vec4 0 0 0 1))))
+    (ge:draw-rect (ge:vec2 (- (/ *box-width* 2)) (- (/ *box-height* 2)))
+                  *box-width* *box-height*
+                  :fill-paint (ge:vec4 0 0 0 1))))
 
 
 (defmethod render-showcase ((this 2d-physics-showcase))
@@ -108,10 +105,12 @@
     (ge:with-canvas (canvas)
       (ge:with-pushed-canvas ()
         (ge:translate-canvas 300 200)
+        (ge:scale-canvas 10 10)
         (draw-circle ball)
         (draw-box box)
 
-        (ge:draw-line (ge:div (first *ground-position*) *unit-scale*)
-                      (ge:div (second *ground-position*) *unit-scale*)
-                      (ge:vec4 0 0 0 1))))
+        (ge:draw-line (first *ground-position*)
+                      (second *ground-position*)
+                      (ge:vec4 0 0 0 1)
+                      :thickness 0.4)))
     (ge:observe-universe universe 0.014)))
