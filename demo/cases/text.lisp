@@ -27,12 +27,10 @@
 
 (defmethod showcase-closing-flow ((this text-showcase))
   (with-slots (font text-renderer text pipeline) this
-    (ge:>>
-     (ge:for-graphics ()
-       (ge:dispose pipeline)
-       (ge:dispose text)
-       (ge:dispose text-renderer)
-       (ge:dispose font)))))
+    (ge:dispose pipeline)
+    (ge:dispose text)
+    (ge:dispose text-renderer)
+    (ge:dispose font)))
 
 
 (defmethod render-showcase ((this text-showcase))
