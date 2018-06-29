@@ -1,4 +1,6 @@
-(cl:in-package :cl-bodge.demo)
+(cl:defpackage :cl-bodge.ui.demo
+  (:use :cl :cl-bodge.demo.api))
+(cl:in-package :cl-bodge.ui.demo)
 
 
 (defclass custom-button (ge:custom-widget) ())
