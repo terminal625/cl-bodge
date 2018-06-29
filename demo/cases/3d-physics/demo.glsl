@@ -1,5 +1,6 @@
 #version 330 core
 
+#include <bodge/phong>
 
 #ifdef VERTEX_SHADER
 

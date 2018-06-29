@@ -10,7 +10,7 @@
 
 (ge:defshader (demo-shader
                (:sources "demo.glsl")
-               (:base-path :system-relative :cl-bodge/demo "cases/"))
+               (:base-path :system-relative :cl-bodge/demo "cases/3d-physics"))
   (position :name "vPosition"))
 
 
