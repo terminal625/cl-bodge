@@ -4,7 +4,7 @@
 
 
 (defclass 3d-physics-showcase ()
-  (scene sphere bulb box ground universe ball-body))
+  (scene sphere bulb box ground universe ball-body ball-shape ground-shape))
 (register-showcase '3d-physics-showcase)
 
 
@@ -14,12 +14,16 @@
 
 
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)
-  (with-slots (scene sphere bulb box ground universe ball-body) this
+  (with-slots (scene sphere bulb box ground
+               universe ball-body ball-shape ground-shape)
+      this
     (ge:>>
      (ge:instantly ()
        (setf universe (ge:make-universe :3d)
              (ge.phy:gravity universe) (ge:vec3 0 -0.01 0)
-             ball-body (ge.phy:make-rigid-body universe)))
+             ball-body (ge.phy:make-rigid-body universe)
+             ball-shape (ge.phy:make-sphere-shape universe 1 :body ball-body)
+             ground-shape (ge.phy:make-cuboid-shape universe 10 0.05 10)))
      (ge:for-graphics ()
        (setf scene (make-simple-scene)
              sphere (add-sphere scene)
@@ -36,8 +40,9 @@
 
 
 (defmethod showcase-closing-flow ((this 3d-physics-showcase))
-  (with-slots (scene universe ball-body) this
+  (with-slots (scene universe ball-body ball-shape) this
     (ge:dispose ball-body)
+    (ge:dispose ball-shape)
     (ge:dispose universe)
     (ge:dispose scene)))
 
