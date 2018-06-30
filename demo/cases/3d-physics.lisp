@@ -4,7 +4,7 @@
 
 
 (defclass 3d-physics-showcase ()
-  (scene sphere bulb box))
+  (scene sphere bulb box ground))
 (register-showcase '3d-physics-showcase)
 
 
@@ -14,15 +14,20 @@
 
 
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)
-  (with-slots (scene sphere bulb box) this
+  (with-slots (scene sphere bulb box ground) this
     (ge:for-graphics ()
       (setf scene (make-simple-scene)
             sphere (add-sphere scene)
             bulb (add-sphere scene :radius 0.1)
-            box (add-box scene))
+            box (add-box scene)
+            ground (add-box scene :x 10 :y 0.05 :z 10))
       (update-shape sphere :color (ge:vec3 0.2 0.6 0.2))
+      (update-shape bulb :color (ge:vec3 1 1 1) :emission-color (ge:vec3 0.8 0.8 0.8))
       (update-shape box :color (ge:vec3 0.2 0.2 0.6))
-      (update-shape bulb :color (ge:vec3 1 1 1) :emission-color (ge:vec3 0.8 0.8 0.8)))))
+      (update-shape ground :color (ge:vec3 0.6 0.3 0.4)
+                           :transform (ge:mult (ge:translation-mat4 0 -1.5 -2)
+                                               (ge:euler-angles->mat4 (ge:vec3 (/ pi 30) 0 0)))))))
+
 
 
 (defmethod showcase-closing-flow ((this 3d-physics-showcase))
