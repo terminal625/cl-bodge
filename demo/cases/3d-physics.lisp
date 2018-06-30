@@ -4,7 +4,7 @@
 
 
 (defclass 3d-physics-showcase ()
-  (scene sphere bulb box ground))
+  (scene sphere bulb box ground universe ball-body))
 (register-showcase '3d-physics-showcase)
 
 
@@ -14,29 +14,37 @@
 
 
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)
-  (with-slots (scene sphere bulb box ground) this
-    (ge:for-graphics ()
-      (setf scene (make-simple-scene)
-            sphere (add-sphere scene)
-            bulb (add-sphere scene :radius 0.1)
-            box (add-box scene)
-            ground (add-box scene :x 10 :y 0.05 :z 10))
-      (update-shape sphere :color (ge:vec3 0.2 0.6 0.2))
-      (update-shape bulb :color (ge:vec3 1 1 1) :emission-color (ge:vec3 0.8 0.8 0.8))
-      (update-shape box :color (ge:vec3 0.2 0.2 0.6))
-      (update-shape ground :color (ge:vec3 0.6 0.3 0.4)
-                           :transform (ge:mult (ge:translation-mat4 0 -1.5 -2)
-                                               (ge:euler-angles->mat4 (ge:vec3 (/ pi 30) 0 0)))))))
+  (with-slots (scene sphere bulb box ground universe ball-body) this
+    (ge:>>
+     (ge:instantly ()
+       (setf universe (ge:make-universe :3d)
+             (ge.phy:gravity universe) (ge:vec3 0 -0.01 0)
+             ball-body (ge.phy:make-rigid-body universe)))
+     (ge:for-graphics ()
+       (setf scene (make-simple-scene)
+             sphere (add-sphere scene)
+             bulb (add-sphere scene :radius 0.1)
+             box (add-box scene)
+             ground (add-box scene :x 10 :y 0.05 :z 10))
+       (update-shape sphere :color (ge:vec3 0.2 0.6 0.2))
+       (update-shape bulb :color (ge:vec3 1 1 1) :emission-color (ge:vec3 0.8 0.8 0.8))
+       (update-shape box :color (ge:vec3 0.2 0.2 0.6))
+       (update-shape ground :color (ge:vec3 0.6 0.3 0.4)
+                            :transform (ge:mult (ge:translation-mat4 0 -1.5 -2)
+                                                (ge:euler-angles->mat4 (ge:vec3 (/ pi 30) 0 0))))))))
 
 
 
 (defmethod showcase-closing-flow ((this 3d-physics-showcase))
-  (with-slots (scene) this
+  (with-slots (scene universe ball-body) this
+    (ge:dispose ball-body)
+    (ge:dispose universe)
     (ge:dispose scene)))
 
 
 (defmethod render-showcase ((this 3d-physics-showcase))
-  (with-slots (scene sphere bulb box) this
+  (with-slots (scene sphere bulb box universe ball-body) this
+    (ge:observe-universe universe 0.14)
     (gl:clear-color 0.1 0.1 0.1 1.0)
     (gl:clear :color-buffer)
     (let ((time (float (ge.util:real-time-seconds) 0f0)))
@@ -52,7 +60,7 @@
                                                       (ge:z position))))
       (update-shape sphere
                     :transform
-                    (ge:translation-mat4 1 0 -2))
+                    (ge:vec->translation-mat4 (ge:body-position ball-body)))
       (update-shape box
                     :transform
                     (ge:mult (ge:translation-mat4 -1 0 -3)
