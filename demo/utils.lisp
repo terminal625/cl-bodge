@@ -1,5 +1,8 @@
 (cl:in-package :cl-bodge.demo)
 
+
+(ge.util:define-constant +cube-vertex-count+ (* 6 6))
+
 ;; translated from freeglut implementation of fghCircleTable
 (defun generate-circle-table (n half-circle-p)
   (let* ((size (abs n))
@@ -93,3 +96,107 @@
                                                                 ; closing off shape
                           (aref indicies (+ idx 1)) offset)))
     (values vertices normals indicies)))
+
+
+(defun make-box-vertex-array (x y z)
+  (let* ((x (float (/ x 2) 0f0))
+         (y (float (/ y 2) 0f0))
+         (z (float (/ z 2) 0f0))
+         (-x (- x))
+         (-y (- y))
+         (-z (- z)))
+    (make-array +cube-vertex-count+ :element-type 'ge:vec3
+                                    :initial-contents (list (ge:vec3 x -y z) ; front
+                                                            (ge:vec3 x y z)
+                                                            (ge:vec3 -x -y z)
+                                                            (ge:vec3 -x -y z)
+                                                            (ge:vec3 x y z)
+                                                            (ge:vec3 -x y z)
+
+                                                            (ge:vec3 -x -y z) ; left
+                                                            (ge:vec3 -x y z)
+                                                            (ge:vec3 -x -y -z)
+                                                            (ge:vec3 -z -y -z)
+                                                            (ge:vec3 -x y z)
+                                                            (ge:vec3 -x y -z)
+
+                                                            (ge:vec3 -x y -z) ; back
+                                                            (ge:vec3 x y -z)
+                                                            (ge:vec3 x -y -z)
+                                                            (ge:vec3 x -y -z)
+                                                            (ge:vec3 -x -y -z)
+                                                            (ge:vec3 -x y -z)
+
+                                                            (ge:vec3 x -y -z) ; right
+                                                            (ge:vec3 x y -z)
+                                                            (ge:vec3 x y z)
+                                                            (ge:vec3 x y z)
+                                                            (ge:vec3 x -y z)
+                                                            (ge:vec3 x -y -z)
+
+                                                            (ge:vec3 x -y z) ; bottom
+                                                            (ge:vec3 -x -y z)
+                                                            (ge:vec3 x -y -z)
+                                                            (ge:vec3 x -y -z)
+                                                            (ge:vec3 -x -y z)
+                                                            (ge:vec3 -x -y -z)
+
+                                                            (ge:vec3 x y z) ; top
+                                                            (ge:vec3 x y -z)
+                                                            (ge:vec3 -x y -z)
+                                                            (ge:vec3 -x y -z)
+                                                            (ge:vec3 -x y z)
+                                                            (ge:vec3 x y z)))))
+
+(defun make-box-normal-array ()
+  (make-array +cube-vertex-count+ :element-type 'ge:vec3
+                      :initial-contents (list (ge:vec3 0 0 1)
+                                              (ge:vec3 0 0 1)
+                                              (ge:vec3 0 0 1)
+                                              (ge:vec3 0 0 1)
+                                              (ge:vec3 0 0 1)
+                                              (ge:vec3 0 0 1)
+
+                                              (ge:vec3 -1 0 0)
+                                              (ge:vec3 -1 0 0)
+                                              (ge:vec3 -1 0 0)
+                                              (ge:vec3 -1 0 0)
+                                              (ge:vec3 -1 0 0)
+                                              (ge:vec3 -1 0 0)
+
+                                              (ge:vec3 0 0 -1)
+                                              (ge:vec3 0 0 -1)
+                                              (ge:vec3 0 0 -1)
+                                              (ge:vec3 0 0 -1)
+                                              (ge:vec3 0 0 -1)
+                                              (ge:vec3 0 0 -1)
+
+                                              (ge:vec3 1 0 0)
+                                              (ge:vec3 1 0 0)
+                                              (ge:vec3 1 0 0)
+                                              (ge:vec3 1 0 0)
+                                              (ge:vec3 1 0 0)
+                                              (ge:vec3 1 0 0)
+
+                                              (ge:vec3 0 -1 0)
+                                              (ge:vec3 0 -1 0)
+                                              (ge:vec3 0 -1 0)
+                                              (ge:vec3 0 -1 0)
+                                              (ge:vec3 0 -1 0)
+                                              (ge:vec3 0 -1 0)
+
+
+                                              (ge:vec3 0 1 0)
+                                              (ge:vec3 0 1 0)
+                                              (ge:vec3 0 1 0)
+                                              (ge:vec3 0 1 0)
+                                              (ge:vec3 0 1 0)
+                                              (ge:vec3 0 1 0))))
+
+(defun generate-box-arrays (x y z)
+  (let ((indices (make-array +cube-vertex-count+ :element-type 'fixnum :initial-element 0)))
+    (loop for i from 0 below +cube-vertex-count+
+          do (setf (aref indices i) i))
+    (values (make-box-vertex-array x y z)
+            (make-box-normal-array)
+            indices)))

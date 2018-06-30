@@ -4,7 +4,7 @@
 
 
 (defclass 3d-physics-showcase ()
-  (scene sphere bulb))
+  (scene sphere bulb box))
 (register-showcase '3d-physics-showcase)
 
 
@@ -14,12 +14,14 @@
 
 
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)
-  (with-slots (scene sphere bulb) this
+  (with-slots (scene sphere bulb box) this
     (ge:for-graphics ()
       (setf scene (make-simple-scene)
             sphere (add-sphere scene)
-            bulb (add-sphere scene :radius 0.1))
-      (update-shape sphere :color (ge:vec3 0.1 0.8 0.1))
+            bulb (add-sphere scene :radius 0.1)
+            box (add-box scene))
+      (update-shape sphere :color (ge:vec3 0.2 0.6 0.2))
+      (update-shape box :color (ge:vec3 0.2 0.2 0.6))
       (update-shape bulb :color (ge:vec3 1 1 1) :emission-color (ge:vec3 0.8 0.8 0.8)))))
 
 
@@ -29,7 +31,7 @@
 
 
 (defmethod render-showcase ((this 3d-physics-showcase))
-  (with-slots (scene sphere bulb) this
+  (with-slots (scene sphere bulb box) this
     (gl:clear-color 0.1 0.1 0.1 1.0)
     (gl:clear :color-buffer)
     (let ((time (float (ge.util:real-time-seconds) 0f0)))
@@ -45,5 +47,11 @@
                                                       (ge:z position))))
       (update-shape sphere
                     :transform
-                    (ge:translation-mat4 0 0 -2)))
+                    (ge:translation-mat4 1 0 -2))
+      (update-shape box
+                    :transform
+                    (ge:mult (ge:translation-mat4 -1 0 -3)
+                             (ge:euler-angles->mat4 (ge:vec3 (* 2 (sin time))
+                                                             (* 2 (cos time))
+                                                             (* 2 (sin time) (cos time)))))))
     (render-scene scene)))

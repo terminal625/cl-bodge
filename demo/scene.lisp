@@ -73,6 +73,7 @@
    (index-buffer)
    (transform :initform (ge:identity-mat4))
    (color :initform (ge:vec3 1 1 1))
+   (primitive :initform :triangle-strip :initarg :primitive)
    (emission-color :initform (ge:vec3 0 0 0))
    (material :initform (ge.shad::make-phong-material :specular-scale 0.65f0
                                                      :shininess 25f0
@@ -97,10 +98,11 @@
 
 (defun render-shape (scene shape)
   (with-slots (position-buffer normal-buffer index-buffer material
-               transform color emission-color)
+               transform color emission-color primitive)
       shape
     (ge:render t (%pipeline-of scene)
                :index-buffer index-buffer
+               :primitive primitive
                'position position-buffer
                'normal normal-buffer
                'material material
@@ -131,18 +133,27 @@
 
 (defclass sphere (shape) ())
 
-
 (defun add-sphere (scene &key color position rotation (radius 1.0))
   (declare (ignore color position rotation))
   (with-slots (shapes) scene
     (flet ((vertex-gen ()
              (cl-bodge.demo::generate-sphere-arrays radius 100 100)))
       (let ((sphere (make-instance 'sphere :vertex-generator #'vertex-gen)))
-      (push sphere shapes)
-      sphere))))
+        (push sphere shapes)
+        sphere))))
 
 
-(defclass box (shape) ())
+(defclass box (shape) ()
+  (:default-initargs :primitive :triangles))
+
+(defun add-box (scene &key color position rotation (x 1) (y 1) (z 1))
+  (declare (ignore color position rotation))
+  (with-slots (shapes) scene
+    (flet ((vertex-gen ()
+             (cl-bodge.demo::generate-box-arrays x y z)))
+      (let ((box (make-instance 'box :vertex-generator #'vertex-gen)))
+        (push box shapes)
+        box))))
 
 
 (defun render-scene (scene)
