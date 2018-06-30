@@ -8,10 +8,18 @@
 (register-showcase '3d-physics-showcase)
 
 
+(ge.gx:defsstruct demo-value
+  value)
+
+
 (ge:defshader (demo-shader
                (:sources "demo.glsl")
                (:base-path :system-relative :cl-bodge/demo "cases/3d-physics"))
-  (position :name "vPosition"))
+  (position :name "vPosition")
+  (value :name "value"))
+
+
+(defparameter *value* (make-demo-value :value 0f0))
 
 
 (ge:defpipeline (demo-pipeline
@@ -44,6 +52,8 @@
 
 (defmethod render-showcase ((this 3d-physics-showcase))
   (with-slots (pipeline position-buffer index-buffer) this
+    (setf (value-of *value*) (float (ge.util:real-time-seconds) 0f0))
     (ge:render t pipeline
                :index-buffer index-buffer
-               'position position-buffer)))
+               'position position-buffer
+               'value *value*)))
