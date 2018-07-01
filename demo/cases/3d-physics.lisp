@@ -47,9 +47,28 @@
 
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)
   (with-slots (scene bulb universe objects) this
-    (flet ((add-object (drawable shape position color)
-             (update-drawable drawable :color color)
-             (let ((object (make-demo-object drawable shape)))
+    (flet ((%add-sphere (radius position color &key mass emission-color kinematic)
+             (let* ((sphere (add-sphere scene))
+                    (body (if kinematic
+                              (ge.phy:make-kinematic-body universe)
+                              (ge.phy:make-rigid-body universe)))
+                    (shape (ge.phy:make-sphere-shape universe radius :body body))
+                    (object (make-demo-object sphere shape)))
+               (update-drawable sphere :color color :emission-color emission-color)
+               (unless kinematic
+                 (ge.phy:infuse-sphere-mass body mass radius))
+               (transform-object object position (ge:vec3))
+               (push object objects)))
+           (%add-box (x y z position color &key mass kinematic)
+             (let* ((box (add-box scene :x x :y y :z z))
+                    (body (if kinematic
+                              (ge.phy:make-kinematic-body universe)
+                              (ge.phy:make-rigid-body universe)))
+                    (shape (ge.phy:make-cuboid-shape universe x y z :body body))
+                    (object (make-demo-object box shape)))
+               (unless kinematic
+                 (ge.phy:infuse-cuboid-mass body mass x y z))
+               (update-drawable box :color color)
                (transform-object object position (ge:vec3))
                (push object objects))))
     (ge:>>
@@ -58,24 +77,10 @@
              (ge.phy:gravity universe) (ge:vec3 0 -0.1 0)))
      (ge:for-graphics ()
        (setf scene (make-simple-scene))
-       (add-object (add-sphere scene)
-                   (ge.phy:make-sphere-shape universe 1
-                                             :body (ge.phy:make-rigid-body universe))
-                   (ge:vec3 0 1 -1)
-                   (ge:vec3 0.2 0.6 0.2))
-       (add-object (add-box scene)
-                   (ge.phy:make-cuboid-shape universe 1 1 1
-                                             :body (ge.phy:make-rigid-body universe))
-                   (ge:vec3 1 3 -1)
-                   (ge:vec3 0.2 0.2 0.6))
-       (let ((x 10)
-             (y 0.05)
-             (z 10))
-         (add-object (add-box scene :x x :y y :z z)
-                     (ge.phy:make-cuboid-shape universe x y z
-                                               :body (ge.phy:make-kinematic-body universe))
-                     (ge:vec3 0 -1.5 -2)
-                     (ge:vec3 0.6 0.3 0.4)))
+       (%add-sphere 1 (ge:vec3 1 1 -1) (ge:vec3 0.2 0.6 0.2) :mass 1)
+       (%add-box 1 1 1 (ge:vec3 0 3 -1) (ge:vec3 0.2 0.2 0.6) :mass 2)
+       (%add-box 10 0.05 10 (ge:vec3 0 -1.5 -2) (ge:vec3 0.6 0.3 0.4) :kinematic t)
+
        (let* ((radius 0.1)
               (bulb-drawable (add-sphere scene :radius radius)))
          (update-drawable bulb-drawable :color (ge:vec3 1 1 1)
