@@ -19,6 +19,12 @@
    (shape :initarg :shape)))
 
 
+(ge:define-destructor demo-object (shape)
+  (let ((body (ge:shape-body shape)))
+    (ge:dispose shape)
+    (ge:dispose body)))
+
+
 (defun make-demo-object (drawable shape)
   (make-instance 'demo-object :drawable drawable :shape shape))
 
@@ -41,7 +47,7 @@
 
 (defun on-pre-solve (this that)
   (declare (ignore this that))
-  (setf (ge:collision-friction) 1)
+  (setf (ge:collision-friction) 10)
   (setf (ge:collision-elasticity) 0.5)
   t)
 
@@ -92,7 +98,11 @@
 
 
 (defmethod showcase-closing-flow ((this 3d-physics-showcase))
-  (with-slots (scene universe objects) this
+  (with-slots (scene universe objects bulb) this
+    (loop for object in objects
+          do (ge:dispose object))
+    (setf objects nil)
+    (ge:dispose bulb)
     (ge:dispose universe)
     (ge:dispose scene)))
 
