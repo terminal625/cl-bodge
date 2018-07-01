@@ -45,8 +45,8 @@
                                        :body (ge:make-rigid-body universe))
             box (ge:make-box-shape universe *box-width* *box-height*
                                    :body (ge:make-rigid-body universe)))
-      (ge:infuse-circle-mass (ge:shape-body ball) 5 1)
-      (ge:infuse-box-mass (ge:shape-body box) 5 10 10)
+      (ge:infuse-circle-mass (ge:shape-body ball) 100 1)
+      (ge:infuse-box-mass (ge:shape-body box) 100 10 10)
       (setf (ge:gravity universe) (ge:vec2 0 -9.81)
             (ge:body-position (ge:shape-body ball)) *ball-position*
             (ge:body-position (ge:shape-body box)) *box-position*))
@@ -113,4 +113,4 @@
                       (second *ground-position*)
                       (ge:vec4 0 0 0 1)
                       :thickness 0.4)))
-    (ge:observe-universe universe 0.014)))
+    (ge:observe-universe universe 0.020)))
