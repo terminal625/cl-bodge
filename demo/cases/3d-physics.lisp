@@ -39,6 +39,12 @@
       (update-object object))))
 
 
+(defun on-pre-solve (this that)
+  (declare (ignore this that))
+  (setf (ge:collision-friction) 1)
+  (setf (ge:collision-elasticity) 0.5)
+  t)
+
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)
   (with-slots (scene bulb universe objects) this
     (flet ((add-object (drawable shape position color)
@@ -48,7 +54,7 @@
                (push object objects))))
     (ge:>>
      (ge:instantly ()
-       (setf universe (ge:make-universe :3d)
+       (setf universe (ge:make-universe :3d :on-pre-solve #'on-pre-solve)
              (ge.phy:gravity universe) (ge:vec3 0 -0.1 0)))
      (ge:for-graphics ()
        (setf scene (make-simple-scene))
