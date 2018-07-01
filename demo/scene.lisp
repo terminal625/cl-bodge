@@ -3,7 +3,7 @@
   (:export #:make-simple-scene
            #:render-scene
            #:update-light
-           #:update-shape
+           #:update-drawable
            #:add-sphere
            #:add-box))
 (cl:in-package :cl-bodge.demo.scene)
@@ -39,7 +39,8 @@
           :reader %light-of)
    (proj :initform (ge:perspective-projection-mat 1 (/ 480 640) 1.0 100.0)
          :accessor %proj-of)
-   (view :initform (ge:translation-mat4 0.0 0.0 -6.0)
+   (view :initform (ge:mult (ge:translation-mat4 0.0 0.0 -10.0)
+                            (ge:euler-angles->mat4 (ge:vec3 (/ pi 10) 0 0)))
          :accessor %view-of)
    (shapes :initform (list nil))))
 
@@ -115,7 +116,7 @@
 
 
 
-(defun update-shape (shape &key color transform material emission-color)
+(defun update-drawable (shape &key color transform material emission-color)
   (with-slots ((this-color color)
                (this-transform transform)
                (this-material material)
