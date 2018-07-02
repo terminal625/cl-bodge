@@ -48,7 +48,7 @@
 (defun on-pre-solve (this that)
   (declare (ignore this that))
   (setf (ge:collision-friction) 10)
-  (setf (ge:collision-elasticity) 0.5)
+  (setf (ge:collision-elasticity) 0.)
   t)
 
 (defmethod showcase-revealing-flow ((this 3d-physics-showcase) ui)

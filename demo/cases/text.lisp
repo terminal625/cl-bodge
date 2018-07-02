@@ -21,7 +21,7 @@
      (ge:for-graphics ()
        (setf font (ge:build-sdf-font "/bodge/demo/sdf/NotoSans-Regular.ttf")
              text (ge:make-text "WEEEEEEEEEEE!" font)
-             pipeline (ge:make-pipeline 'ge:text-pipeline)
+             pipeline (ge:make-shader-pipeline 'ge:text-pipeline)
              text-renderer (ge:make-text-renderer 800 600 font 64))))))
 
 

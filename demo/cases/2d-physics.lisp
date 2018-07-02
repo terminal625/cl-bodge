@@ -53,7 +53,8 @@
      (ge:for-host ()
        (ge:viewport-size))
      (ge:for-graphics (viewport-size)
-       (setf canvas (ge:make-canvas (ge:x viewport-size) (ge:y viewport-size)))))))
+       (setf canvas (ge:make-canvas '2d-showcase-canvas
+                                    (ge:x viewport-size) (ge:y viewport-size)))))))
 
 
 (defmethod showcase-closing-flow ((this 2d-physics-showcase))
@@ -100,17 +101,20 @@
                   :fill-paint (ge:vec4 0 0 0 1))))
 
 
-(defmethod render-showcase ((this 2d-physics-showcase))
-  (with-slots (universe ground ball canvas box) this
-    (ge:with-canvas (canvas)
-      (ge:with-pushed-canvas ()
-        (ge:translate-canvas 300 200)
-        (ge:scale-canvas 10 10)
-        (draw-circle ball)
-        (draw-box box)
+(ge:defcanvas 2d-showcase-canvas (ball box)
+  (ge:with-pushed-canvas ()
+    (ge:translate-canvas 300 200)
+    (ge:scale-canvas 10 10)
+    (draw-circle ball)
+    (draw-box box)
 
-        (ge:draw-line (first *ground-position*)
-                      (second *ground-position*)
-                      (ge:vec4 0 0 0 1)
-                      :thickness 0.4)))
+    (ge:draw-line (first *ground-position*)
+                  (second *ground-position*)
+                  (ge:vec4 0 0 0 1)
+                  :thickness 0.4)))
+
+
+(defmethod render-showcase ((this 2d-physics-showcase))
+  (with-slots (universe ball canvas box) this
+    (ge:render t canvas :ball ball :box box)
     (ge:observe-universe universe 0.020)))

@@ -53,7 +53,7 @@
 
 (defmethod initialize-instance :after ((this scene) &key)
   (with-slots (pipeline) this
-    (setf pipeline (ge:make-pipeline 'demo-pipeline))))
+    (setf pipeline (ge:make-shader-pipeline 'demo-pipeline))))
 
 
 (defun update-light (scene &key color position)
