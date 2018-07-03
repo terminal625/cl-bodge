@@ -97,11 +97,11 @@
   (ge:dispose index-buffer))
 
 
-(defun render-shape (scene shape)
+(defun render-shape (output scene shape)
   (with-slots (position-buffer normal-buffer index-buffer material
                transform color emission-color primitive)
       shape
-    (ge:render t (%pipeline-of scene)
+    (ge:render output (%pipeline-of scene)
                :index-buffer index-buffer
                :primitive primitive
                'position position-buffer
@@ -157,8 +157,8 @@
         box))))
 
 
-(defun render-scene (scene)
+(defun render-scene (scene &optional (output t))
   (with-slots (pipeline shapes) scene
     (loop for shape in shapes
           when shape
-            do (render-shape scene shape))))
+            do (render-shape output scene shape))))
