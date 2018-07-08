@@ -14,8 +14,7 @@
 
 (defun render (demo)
   (with-slots (ui active-showcase) demo
-    (gl:clear-color 1.0 1.0 1.0 1.0)
-    (gl:clear :color-buffer :stencil-buffer :depth-buffer)
+    (ge:clear-rendering-output t)
     (when active-showcase
       (render-showcase active-showcase))
     (ge:compose-ui ui)

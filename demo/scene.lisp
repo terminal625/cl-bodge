@@ -11,7 +11,7 @@
 
 (ge:defshader (demo-shader
                (:sources "demo.glsl")
-               (:base-path :system-relative :cl-bodge/demo))
+               (:base-path :system-relative :cl-bodge/demo "shaders/"))
   (position :name "vPosition")
   (normal :name "vNormal")
   (color :name "diffuseColor")
@@ -31,11 +31,12 @@
 
 (defclass scene (ge:disposable)
   ((pipeline :reader %pipeline-of)
-   (light :initform (ge.shad::make-phong-point-light :position (ge:vec3 0 0 0)
-                                                     :color (ge:vec3 1 1 1)
-                                                     :ambient (ge:vec3 0.3 0.3 0.3)
-                                                     :falloff 0.15f0
-                                                     :radius 100f0)
+   (depth-pipeline :reader %depth-pipeline-of)
+   (light :initform (ge.shad:make-phong-point-light :position (ge:vec3 0 0 0)
+                                                    :color (ge:vec3 1 1 1)
+                                                    :ambient (ge:vec3 0.3 0.3 0.3)
+                                                    :falloff 0.15f0
+                                                    :radius 100f0)
           :reader %light-of)
    (proj :initform (ge:perspective-projection-mat 1 (/ 480 640) 1.0 100.0)
          :accessor %proj-of)
@@ -45,15 +46,17 @@
    (shapes :initform (list nil))))
 
 
-(ge:define-destructor scene (pipeline shapes)
+(ge:define-destructor scene (pipeline shapes depth-pipeline)
   (loop for shape in shapes
         when shape do (ge:dispose shape))
+  (ge:dispose depth-pipeline)
   (ge:dispose pipeline))
 
 
 (defmethod initialize-instance :after ((this scene) &key)
-  (with-slots (pipeline) this
-    (setf pipeline (ge:make-shader-pipeline 'demo-pipeline))))
+  (with-slots (pipeline depth-pipeline) this
+    (setf pipeline (ge:make-shader-pipeline 'demo-pipeline)
+          depth-pipeline (ge:make-shader-pipeline 'ge:depth-pipeline))))
 
 
 (defun update-light (scene &key color position)
@@ -76,10 +79,10 @@
    (color :initform (ge:vec3 1 1 1))
    (primitive :initform :triangle-strip :initarg :primitive)
    (emission-color :initform (ge:vec3 0 0 0))
-   (material :initform (ge.shad::make-phong-material :specular-scale 0.65f0
-                                                     :shininess 25f0
-                                                     :roughness 10f0
-                                                     :albedo 0.95f0))))
+   (material :initform (ge.shad:make-phong-material :specular-scale 0.65f0
+                                                    :shininess 25f0
+                                                    :roughness 10f0
+                                                    :albedo 0.95f0))))
 
 
 (defmethod initialize-instance :after ((this shape) &key vertex-generator)

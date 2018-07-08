@@ -99,12 +99,13 @@
 
 (defmethod showcase-closing-flow ((this 3d-physics-showcase))
   (with-slots (scene universe objects bulb) this
-    (loop for object in objects
-          do (ge:dispose object))
-    (setf objects nil)
-    (ge:dispose bulb)
-    (ge:dispose universe)
-    (ge:dispose scene)))
+    (ge:for-graphics ()
+      (loop for object in objects
+            do (ge:dispose object))
+      (setf objects nil)
+      (ge:dispose bulb)
+      (ge:dispose universe)
+      (ge:dispose scene))))
 
 
 (defmethod render-showcase ((this 3d-physics-showcase))
