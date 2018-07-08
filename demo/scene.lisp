@@ -2,6 +2,7 @@
   (:use :cl)
   (:export #:make-simple-scene
            #:render-scene
+           #:update-view
            #:update-light
            #:update-drawable
            #:add-sphere
@@ -38,10 +39,9 @@
                                                     :falloff 0.15f0
                                                     :radius 100f0)
           :reader %light-of)
-   (proj :initform (ge:perspective-projection-mat 1 (/ 480 640) 1.0 100.0)
+   (proj :initarg :projection-matrix
          :accessor %proj-of)
-   (view :initform (ge:mult (ge:translation-mat4 0.0 0.0 -10.0)
-                            (ge:euler-angles->mat4 (ge:vec3 (/ pi 10) 0 0)))
+   (view :initform (ge:identity-mat4)
          :accessor %view-of)
    (shapes :initform (list nil))))
 
@@ -59,6 +59,12 @@
           depth-pipeline (ge:make-shader-pipeline 'ge:depth-pipeline))))
 
 
+(defun update-view (scene &key (position (ge:vec3 0 0 0)) (rotation (ge:vec3 0 0 0)))
+  (with-slots (view) scene
+    (setf view (ge:mult (ge:vec->translation-mat4 position)
+                        (ge:euler-angles->mat4 rotation)))))
+
+
 (defun update-light (scene &key color position)
   (with-slots (light) scene
     (when color
@@ -67,8 +73,10 @@
       (setf (ge:phong-point-light-position light) position))))
 
 
-(defun make-simple-scene ()
-  (make-instance 'scene))
+(defun make-simple-scene (&key projection-matrix)
+  (make-instance 'scene
+                 :projection-matrix (or projection-matrix
+                                        (ge:perspective-projection-mat 1 (/ 480 640) 1.0 100.0))))
 
 
 (defclass shape (ge:disposable)

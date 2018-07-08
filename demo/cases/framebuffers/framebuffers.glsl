@@ -24,13 +24,12 @@ void main () {
 
 in vec3 position;
 
-uniform vec3 diffuseColor;
 uniform samplerCube cubeMap;
 
 out vec4 fColor;
 
 void main() {
-  fColor = texture(cubeMap, normalize(position)) + vec4(diffuseColor, 1.0);
+  fColor = texture(cubeMap, normalize(position));
 }
 
 #endif

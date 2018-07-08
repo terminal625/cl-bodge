@@ -17,7 +17,9 @@
 (defvar *box-pipeline* nil)
 
 (defvar *scene-1* nil)
+(defvar *scene-box* nil)
 (defvar *scene-2* nil)
+(defvar *scene-ball* nil)
 
 (defvar *framebuffer* nil)
 
@@ -41,7 +43,6 @@
                (:sources "framebuffers.glsl")
                (:base-path :system-relative :cl-bodge/demo "cases/framebuffers"))
   (position :name "vPosition")
-  (color :name "diffuseColor")
   (cube-texture :name "cubeMap")
   (model :name "model")
   (view :name "view")
@@ -66,15 +67,14 @@
 
 
 (defun render-box (box output transform)
-  (with-slots (position-buffer index-buffer color) box
+  (with-slots (position-buffer index-buffer) box
     (ge:render output *box-pipeline*
                :index-buffer index-buffer
                'position position-buffer
                'model transform
                'view *view-matrix*
                'cube-texture *cubemap-texture*
-               'projection *projection-matrix*
-               'color color)))
+               'projection *projection-matrix*)))
 
 
 (defun make-box (x y z)
@@ -85,12 +85,47 @@
                         :position-buffer (ge:make-array-buffer vertices :element-size 3))))
 
 
+(defun init-scene-1 ()
+  (setf *scene-1* (make-simple-scene
+                   :projection-matrix (ge:perspective-projection-mat 1 1 1 10))
+        *scene-box* (add-box *scene-1*))
+  (update-light *scene-1* :position (ge:vec3 2 -2 4))
+  (update-drawable *scene-box* :color (ge:vec3 0 1 0)))
+
+
+(defun render-scene-1 (output time)
+  (ge:clear-rendering-output output :color (ge:vec4 0.2 0.2 0.2 1))
+  (update-drawable *scene-box*
+                   :transform (ge:mult
+                               (ge:translation-mat4 (* 0.5 (sin time))
+                                                    (* 0.5 (cos time))
+                                                    -3)
+                               (ge:euler-angles->mat4 (ge:vec3 time (sin time) time))))
+  (render-scene *scene-1* output))
+
+
+(defun init-scene-2 ()
+  (setf *scene-2* (make-simple-scene
+                   :projection-matrix (ge:perspective-projection-mat 1 1 1 10))
+        *scene-ball* (add-sphere *scene-2*))
+  (update-light *scene-2* :position (ge:vec3 -5 2 2))
+  (update-drawable *scene-ball* :color (ge:vec3 1 0 0)))
+
+
+(defun render-scene-2 (output time)
+  (ge:clear-rendering-output output :color (ge:vec4 0.2 0.2 0.2 1))
+  (update-drawable *scene-ball* :transform (ge:translation-mat4 (* 0.9 (cos (* time 2)))
+                                                                (* 0.9 (sin (* time 2)))
+                                                                -4.5))
+  (render-scene *scene-2* output))
+
+
 (defmethod showcase-revealing-flow ((this framebuffers-showcase) ui)
   (ge:for-graphics ()
+    (init-scene-1)
+    (init-scene-2)
     (setf *box* (make-box 1 1 1)
           *box-pipeline* (ge:make-shader-pipeline 'framebuffers-pipeline)
-          *scene-1* (make-simple-scene)
-          *scene-2* (make-simple-scene)
           *framebuffer* (ge:make-framebuffer)
           *2d-texture* (ge:make-empty-2d-texture 640 480 :rgba)
           *banner-pipeline* (ge:make-shader-pipeline 'ge:banner-pipeline)
@@ -128,41 +163,35 @@
 
 (defmethod render-showcase ((this framebuffers-showcase))
   (ge:clear-rendering-output t :color (ge:vec4 0.1 0.1 0.1 1.0))
-  (ge:clear-rendering-output (ge:cubemap-positive-x-layer *cubemap-texture*)
-                             :color (ge:vec4 0.1 0.3 0.1 1.0))
-  (ge:clear-rendering-output (ge:cubemap-positive-y-layer *cubemap-texture*)
-                             :color (ge:vec4 0.3 0.1 0.1 1.0))
-  (ge:clear-rendering-output (ge:cubemap-positive-z-layer *cubemap-texture*)
-                             :color (ge:vec4 0.1 0.1 0.3 1.0))
-  (ge:clear-rendering-output (ge:cubemap-negative-x-layer *cubemap-texture*)
-                             :color (ge:vec4 0.3 0.3 0.1 1.0))
-  (ge:clear-rendering-output (ge:cubemap-negative-y-layer *cubemap-texture*)
-                             :color (ge:vec4 0.1 0.3 0.3 1.0))
-  (ge:clear-rendering-output (ge:cubemap-negative-z-layer *cubemap-texture*)
-                             :color (ge:vec4 0.3 0.1 0.3 1.0))
+  (ge:clear-rendering-output *cubemap-texture*
+                             :color (ge:vec4 0.8 0.8 0.8 1.0))
 
 
   (let ((time (float (ge.util:real-time-seconds) 0f0)))
-    (render-box *box* t (ge:mult (ge:translation-mat4 0.3 0 -2)
-                                 (ge:euler-angles->mat4 (ge:vec3 (* 0.3 time)
-                                                                 0
-                                                                 (* 0.3 time))))))
-  #++(progn
-    (let ((position (ge:vec3 (* 1.2 (sin time))
-                             (* 1.2 (cos time))
-                             (* (cos time) (sin time)))))
-      (update-light scene :position position)
-      (transform-object bulb position (ge:vec3)))
-    (ge:clear-rendering-output *tex* :color (ge:vec4 0.2 0.3 0.3 1.0))
-    (ge:clear-rendering-output *depth*)
-    (ge:clear-rendering-output *cubemap*)
-    (render-scene scene *framebuffer*)
-    (ge:render t *banner-pipeline*
+    (render-scene-1 (ge:cubemap-positive-z-layer *cubemap-texture*) time)
+    (render-scene-2 (ge:cubemap-positive-x-layer *cubemap-texture*) time)
+
+    (render-scene-1 *depth-texture* time)
+    (ge:render (ge:cubemap-negative-z-layer *cubemap-texture*) *banner-pipeline*
                :vertex-count 4
                :primitive :triangle-strip
-               'ge:banner-mvp (ge:mult (ge:perspective-projection-mat 1 1 1 10)
-                                       (ge:translation-mat4 (* 0.4 (sin time))
-                                                            (* 0.4 (cos time)) -4))
+               'ge:banner-mvp (ge:orthographic-projection-mat 2 2 0 1)
                'ge:banner-position *banner-pos*
-               'ge:banner-tex-coord *banner-tex*
-               'ge:banner-texture *tex*)))
+               'ge:banner-tex-coord *banner-tex-coords*
+               'ge:banner-texture *depth-texture*)
+
+
+    (ge:clear-rendering-output *depth-texture*)
+    (render-scene-2 *depth-texture* time)
+    (ge:render (ge:cubemap-negative-x-layer *cubemap-texture*) *banner-pipeline*
+               :vertex-count 4
+               :primitive :triangle-strip
+               'ge:banner-mvp (ge:orthographic-projection-mat 2 2 0 1)
+               'ge:banner-position *banner-pos*
+               'ge:banner-tex-coord *banner-tex-coords*
+               'ge:banner-texture *depth-texture*)
+
+    (render-box *box* t (ge:mult (ge:translation-mat4 0.3 0 -2)
+                                 (ge:euler-angles->mat4 (ge:vec3 (* 0.2 time)
+                                                                 (* 0.4 time)
+                                                                 (* 0.6 time)))))))
