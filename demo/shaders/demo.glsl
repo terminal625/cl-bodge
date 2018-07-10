@@ -1,6 +1,7 @@
 #version 330 core
 
 #include <bodge/phong>
+#include <bodge/shadow>
 
 uniform mat4 view;
 
@@ -9,17 +10,18 @@ uniform mat4 view;
 in vec3 vPosition;
 in vec3 vNormal;
 
-uniform mat4 model;
 uniform mat4 projection;
+uniform mat4 model;
 
 out vec3 normal;
 out vec3 position;
 
 void main () {
   mat4 viewModelMatrix = view * model;
-  vec4 viewModelPosition = viewModelMatrix * vec4(vPosition, 1.0);
-  gl_Position = projection * viewModelPosition;
-  position = viewModelPosition.xyz;
+  gl_Position = projection * viewModelMatrix * vec4(vPosition, 1.0);
+
+  position = (model * vec4(vPosition, 1.0)).xyz;
+
   mat3 normalMatrix = inverse(transpose(mat3(viewModelMatrix)));
   normal = normalize(normalMatrix * vNormal);
 }
@@ -35,12 +37,20 @@ uniform PhongMaterial material;
 uniform PhongPointLight light;
 uniform vec3 diffuseColor;
 uniform vec3 emissionColor;
+uniform samplerCube shadowMap;
+uniform vec2 nearFar;
 
 out vec4 fColor;
 
+
 void main() {
-  fColor = vec4(emissionColor +
-                calcPhongReflection(light, material, position, normal, diffuseColor, 1.0, view), 1.0);
+  if (inShadow(position.xyz - light.position.xyz, shadowMap, nearFar.x, nearFar.y, 0.0001)) {
+    fColor = vec4(emissionColor + light.ambient * diffuseColor, 1.0);
+  } else {
+    vec3 phongColor = calcPhongReflection(light, material, position, normal, diffuseColor, 1.0,
+                                          mat3(view) * vec3(0.0, 0.0, -1.0));
+    fColor = vec4(emissionColor + phongColor, 1.0);
+  }
 }
 
 #endif

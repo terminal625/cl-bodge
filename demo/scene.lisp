@@ -10,6 +10,10 @@
 (cl:in-package :cl-bodge.demo.scene)
 
 
+(declaim (special *depth-mvp*))
+
+(defparameter *near-far* (ge:vec2 0.01 10.01))
+
 (ge:defshader (demo-shader
                (:sources "demo.glsl")
                (:base-path :system-relative :cl-bodge/demo "shaders/"))
@@ -18,10 +22,12 @@
   (color :name "diffuseColor")
   (emission-color :name "emissionColor")
   (model :name "model")
+  (near-far-vec :name "nearFar")
   (view :name "view")
   (projection :name "projection")
   (material :name "material")
-  (light :name "light"))
+  (light :name "light")
+  (shadow-map :name "shadowMap"))
 
 
 (ge:defpipeline (demo-pipeline
@@ -43,7 +49,8 @@
          :accessor %proj-of)
    (view :initform (ge:identity-mat4)
          :accessor %view-of)
-   (shapes :initform (list nil))))
+   (shapes :initform (list nil))
+   (shadow-map :initform nil :reader %shadow-map-of)))
 
 
 (ge:define-destructor scene (pipeline shapes depth-pipeline)
@@ -54,9 +61,10 @@
 
 
 (defmethod initialize-instance :after ((this scene) &key)
-  (with-slots (pipeline depth-pipeline) this
+  (with-slots (pipeline depth-pipeline shadow-map) this
     (setf pipeline (ge:make-shader-pipeline 'demo-pipeline)
-          depth-pipeline (ge:make-shader-pipeline 'ge:depth-pipeline))))
+          depth-pipeline (ge:make-shader-pipeline 'ge:depth-pipeline)
+          shadow-map (ge:make-empty-depth-cubemap-texture 1024))))
 
 
 (defun update-view (scene &key (position (ge:vec3 0 0 0)) (rotation (ge:vec3 0 0 0)))
@@ -123,8 +131,18 @@
                'view (%view-of scene)
                'projection (%proj-of scene)
                'color color
-               'emission-color emission-color)))
+               'near-far-vec *near-far*
+               'emission-color emission-color
+               'shadow-map (%shadow-map-of scene))))
 
+
+(defun render-shape-depth (output scene shape)
+  (with-slots (position-buffer index-buffer transform primitive) shape
+    (ge:render-with-depth-pipeline output (%depth-pipeline-of scene)
+                                   (ge:mult *depth-mvp* transform)
+                                   position-buffer
+                                   :index-buffer index-buffer
+                                   :primitive primitive)))
 
 
 (defun update-drawable (shape &key color transform material emission-color)
@@ -158,6 +176,7 @@
 (defclass box (shape) ()
   (:default-initargs :primitive :triangles))
 
+
 (defun add-box (scene &key color position rotation (x 1) (y 1) (z 1))
   (declare (ignore color position rotation))
   (with-slots (shapes) scene
@@ -168,8 +187,35 @@
         box))))
 
 
-(defun render-scene (scene &optional (output t))
+(defun %render-scene (scene rendering-fu &optional (output t))
   (with-slots (pipeline shapes) scene
     (loop for shape in shapes
           when shape
-            do (render-shape output scene shape))))
+            do (funcall rendering-fu output scene shape))))
+
+
+(defun render-to-shadow-map (scene shadow-layer rotation)
+  (with-slots (light shadow-map) scene
+    (let* ((light-position (ge:mult -1 (ge:phong-point-light-position light)))
+           (*depth-mvp* (ge:mult (ge:perspective-projection-mat (* 2 (ge:x *near-far*))
+                                                                (* 2 (ge:x *near-far*))
+                                                                (ge:x *near-far*)
+                                                                (ge:y *near-far*))
+                                 rotation
+                                 (ge:translation-mat4 (ge:x light-position)
+                                                      (ge:y light-position)
+                                                      (ge:z light-position)))))
+      (%render-scene scene #'render-shape-depth shadow-layer))))
+
+
+(defun render-shadow-map (scene)
+  (with-slots (light shadow-map) scene
+    (ge:clear-rendering-output shadow-map)
+    (ge:do-cubemap-layers ((layer rotation) shadow-map)
+      (render-to-shadow-map scene layer rotation))))
+
+
+(defun render-scene (scene &optional (output t))
+  (with-slots (pipeline shapes) scene
+    (render-shadow-map scene)
+    (%render-scene scene #'render-shape output)))

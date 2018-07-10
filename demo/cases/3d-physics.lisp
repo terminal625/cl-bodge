@@ -87,7 +87,7 @@
        (%add-box 1 1 1 (ge:vec3 0 3 -1) (ge:vec3 0.2 0.2 0.6) :mass 2)
        (%add-box 10 0.05 10 (ge:vec3 0 -1.5 -2) (ge:vec3 0.6 0.3 0.4) :kinematic t)
 
-       (update-view scene :position (ge:vec3 1 0 -14) :rotation (ge:vec3 (/ pi 8) 0))
+       (update-view scene :position (ge:vec3 1 0 -10) :rotation (ge:vec3 (/ pi 8) 0))
        (let* ((radius 0.1)
               (bulb-drawable (add-sphere scene :radius radius)))
          (update-drawable bulb-drawable :color (ge:vec3 1 1 1)
@@ -119,9 +119,9 @@
           do (update-object object))
 
     (let ((time (float (ge.util:real-time-seconds) 0f0)))
-      (let ((position (ge:vec3 (* 1.2 (sin time))
-                               (* 1.2 (cos time))
-                               (* (cos time) (sin time)))))
+      (let ((position (ge:vec3 (* 2 (cos time))
+                               0
+                               (* 2 (sin time)))))
         (update-light scene :position position)
         (transform-object bulb position (ge:vec3)))
     (render-scene scene))))

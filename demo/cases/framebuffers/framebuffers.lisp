@@ -23,15 +23,10 @@
 
 (defvar *framebuffer* nil)
 
-(defvar *banner-pipeline* nil)
-(defvar *banner-pos* nil)
-(defvar *banner-tex-coords* nil)
+(defvar *banner* nil)
 
 (defvar *2d-texture* nil)
-
 (defvar *depth-texture* nil)
-(defvar *depth-pipeline* nil)
-
 (defvar *cubemap-texture* nil)
 (defvar *depth-cubemap-texture* nil)
 
@@ -127,19 +122,10 @@
     (setf *box* (make-box 1 1 1)
           *box-pipeline* (ge:make-shader-pipeline 'framebuffers-pipeline)
           *framebuffer* (ge:make-framebuffer)
-          *2d-texture* (ge:make-empty-2d-texture 640 480 :rgba)
-          *banner-pipeline* (ge:make-shader-pipeline 'ge:banner-pipeline)
-          *banner-pos* (ge:make-array-buffer #2a((1 -1 0)
-                                                 (1 1 0)
-                                                 (-1 -1 0)
-                                                 (-1 1 0)))
-          *banner-tex-coords* (ge:make-array-buffer #2a((1 0)
-                                                        (1 1)
-                                                        (0 0)
-                                                        (0 1)))
-          *depth-texture* (ge:make-empty-depth-texture 640 480)
-          *depth-pipeline* (ge:make-shader-pipeline 'ge:depth-pipeline)
+          *banner* (ge:make-2d-banner -1 -1 2 2)
 
+          *2d-texture* (ge:make-empty-2d-texture 640 480 :rgba)
+          *depth-texture* (ge:make-empty-depth-texture 640 480)
           *cubemap-texture* (ge.gx:make-empty-cubemap-texture 1024 :rgba)
           *depth-cubemap-texture* (ge.gx:make-empty-depth-cubemap-texture 1024))
     (ge.gx:configure-framebuffer *framebuffer* *2d-texture* *depth-texture*)))
@@ -152,10 +138,9 @@
                                *scene-1*
                                *scene-2*
                                *framebuffer*
-                               *banner-pipeline*
+                               *banner*
                                *2d-texture*
                                *depth-texture*
-                               *depth-pipeline*
                                *cubemap-texture*
                                *depth-cubemap-texture*)
           do (ge:dispose element))))
@@ -168,29 +153,32 @@
 
 
   (let ((time (float (ge.util:real-time-seconds) 0f0)))
-    (render-scene-1 (ge:cubemap-positive-z-layer *cubemap-texture*) time)
-    (render-scene-2 (ge:cubemap-positive-x-layer *cubemap-texture*) time)
-
-    (render-scene-1 *depth-texture* time)
-    (ge:render (ge:cubemap-negative-z-layer *cubemap-texture*) *banner-pipeline*
-               :vertex-count 4
-               :primitive :triangle-strip
-               'ge:banner-mvp (ge:orthographic-projection-mat 2 2 0 1)
-               'ge:banner-position *banner-pos*
-               'ge:banner-tex-coord *banner-tex-coords*
-               'ge:banner-texture *depth-texture*)
-
-
+    ;; box scene with implicit framebuffer
     (ge:clear-rendering-output *depth-texture*)
-    (render-scene-2 *depth-texture* time)
-    (ge:render (ge:cubemap-negative-x-layer *cubemap-texture*) *banner-pipeline*
-               :vertex-count 4
-               :primitive :triangle-strip
-               'ge:banner-mvp (ge:orthographic-projection-mat 2 2 0 1)
-               'ge:banner-position *banner-pos*
-               'ge:banner-tex-coord *banner-tex-coords*
-               'ge:banner-texture *depth-texture*)
+    (render-scene-1 (ge:cubemap-positive-x-layer *cubemap-texture*) time)
+    (render-scene-1 *depth-texture* time)
+    (ge:render-banner *banner* *depth-texture* :output (ge:cubemap-positive-y-layer *cubemap-texture*))
 
+    ;; sphere scene with explicit framebuffer
+    (ge:clear-rendering-output *depth-texture*)
+    (render-scene-2 *framebuffer* time)
+    (ge:render-banner *banner* *2d-texture*
+                      :output (ge:cubemap-negative-x-layer *cubemap-texture*))
+    (ge:render-banner *banner* *depth-texture*
+                      :output (ge:cubemap-negative-y-layer *cubemap-texture*))
+
+    (ge:clear-rendering-output (ge:cubemap-positive-z-layer *cubemap-texture*)
+                               :color (ge:vec4 (+ 0.4 (* 0.3 (cos time)))
+                                               (+ 0.4 (* 0.3 (sin time)))
+                                               0.5
+                                               1))
+    (ge:clear-rendering-output (ge:cubemap-negative-z-layer *cubemap-texture*)
+                               :color (ge:vec4 (+ 0.4 (* 0.3 (sin time)))
+                                               (+ 0.4 (* 0.3 (cos time)))
+                                               0.5
+                                               1))
+
+    ;; main box
     (render-box *box* t (ge:mult (ge:translation-mat4 0.3 0 -2)
                                  (ge:euler-angles->mat4 (ge:vec3 (* 0.2 time)
                                                                  (* 0.4 time)
