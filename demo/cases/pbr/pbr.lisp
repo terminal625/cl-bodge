@@ -3,21 +3,6 @@
 (cl:in-package :cl-bodge.pbr.demo)
 
 
-#++(ge:defsstruct pbr-info
-  (n-dot-l :name "NdotL")
-  (n-dot-v :name "NdotV")
-  (n-dot-h :name "NdotH")
-  (l-dot-h :name "LdotH")
-  (v-dot-h :name "VdotH")
-  (perceptual-roughness :name "perceptualRoughness")
-  (metalness :name "metalness")
-  (reflectance-0 :name "reflectance0")
-  (reflectance-90 :name "reflectance90")
-  (alpha-roughness :name "alphaRoughness")
-  (diffuse-color :name "diffuseColor")
-  (specular-color :name "specularColor"))
-
-
 (ge:defshader (pbr-vert
                (:sources "pbr-vert.glsl")
                (:base-path :system-relative :cl-bodge/demo "cases/pbr"))
