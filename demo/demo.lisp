@@ -114,9 +114,6 @@
 
 
 (defmethod ge:initialize-system :after ((this demo))
-  (ge:mount-container "/bodge/demo/" (merge-pathnames
-                                      "assets/font.brf"
-                                      (asdf:component-pathname (asdf:find-system :cl-bodge/demo))))
   (ge:run (flow:serially
            (ge:for-host ()
              (init-host this))

@@ -7,7 +7,8 @@
            #:showcase-name
            #:showcase-revealing-flow
            #:showcase-closing-flow
-           #:render-showcase))
+           #:render-showcase
+           #:merge-showcase-pathname))
 
 
 (cl:defpackage :cl-bodge.demo

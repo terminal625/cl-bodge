@@ -2,10 +2,11 @@
   (:use :cl :cl-bodge.demo.api))
 (cl:in-package :cl-bodge.pbr.demo)
 
+(ge.rsc:defresource :scene "/bodge/demo/pbr/DamagedHelmet")
 
 (ge:defshader (pbr-vert
                (:sources "pbr-vert.glsl")
-               (:base-path :system-relative :cl-bodge/demo "cases/pbr"))
+               (:base-path (merge-showcase-pathname "pbr/")))
   (position :name "a_Position" :size 4)
   (normal :name "a_Normal" :size 4)
   (tangent :name "a_Tangent" :size 4)
@@ -17,7 +18,7 @@
 
 (ge:defshader (pbr-frag
                (:sources "pbr-frag.glsl")
-               (:base-path :system-relative :cl-bodge/demo "cases/pbr"))
+               (:base-path (merge-showcase-pathname "pbr/")))
   (light-direction :name "u_LightDirection")
   (light-color :name "u_LightColor")
   (diffuse-env-sampler :name "u_DiffuseEnvSampler")
@@ -39,13 +40,13 @@
   (scale-ibl-ambient :name "u_ScaleIBLAmbient"))
 
 
-
 (ge:defpipeline pbr-pipeline
   :vertex pbr-vert
   :fragment pbr-frag)
 
 
 (defvar *pbr-pipeline* nil)
+(defvar *model* nil)
 
 ;;;
 ;;; SHOWCASE
@@ -53,8 +54,11 @@
 (defclass pbr-showcase () ())
 
 
-(register-showcase 'pbr-showcase)
+(defmethod initialize-instance :after ((this pbr-showcase) &key)
+  (ge:mount-container "/bodge/demo/pbr/" (merge-showcase-pathname "pbr/assets/DamagedHelmet.brf")))
 
+
+(register-showcase 'pbr-showcase)
 
 
 (defmethod showcase-name ((this pbr-showcase))
@@ -63,6 +67,8 @@
 
 (defmethod showcase-revealing-flow ((this pbr-showcase) ui)
   (ge:>>
+   (ge:instantly ()
+     (setf *model* (ge:load-resource "/bodge/demo/pbr/DamagedHelmet")))
    (ge:for-graphics ()
      (setf *pbr-pipeline* (ge:make-shader-pipeline 'pbr-pipeline)))))
 

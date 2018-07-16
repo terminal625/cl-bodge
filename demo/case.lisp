@@ -3,6 +3,12 @@
 (defvar *viewport-pixel-ratio* 1f0)
 (defvar *viewport-scale* 1f0)
 
+(defun merge-showcase-pathname (pathname)
+  (merge-pathnames pathname
+                   (merge-pathnames "cases/"
+                                    (asdf:component-pathname (asdf:find-system :cl-bodge/demo)))))
+
+
 (defvar *showcases* nil)
 
 (defun register-showcase (class)

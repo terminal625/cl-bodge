@@ -3,9 +3,16 @@
 (cl:in-package :cl-bodge.text.demo)
 
 
+(ge:define-sdf-font "/bodge/demo/text/sdf/NotoSans-Regular.ttf")
+
+
 (defclass text-showcase ()
   (font text-renderer pipeline text
    (proj :initform (ge:perspective-projection-mat 200 150 1 100))))
+
+
+(defmethod initialize-instance :after ((this text-showcase) &key)
+  (ge:mount-container "/bodge/demo/text/" (merge-showcase-pathname "text/font.brf")))
 
 
 (register-showcase 'text-showcase)
@@ -19,7 +26,7 @@
   (with-slots (font text-renderer text pipeline) this
     (ge:>>
      (ge:for-graphics ()
-       (setf font (ge:build-sdf-font "/bodge/demo/sdf/NotoSans-Regular.ttf")
+       (setf font (ge:build-sdf-font "/bodge/demo/text/sdf/NotoSans-Regular.ttf")
              text (ge:make-text "WEEEEEEEEEEE!" font)
              pipeline (ge:make-shader-pipeline 'ge:text-pipeline)
              text-renderer (ge:make-text-renderer 800 600 font 64))))))
