@@ -97,6 +97,7 @@
   (ge:shutdown))
 
 
-(defun run ()
-  (ge:startup `(:engine (:systems (demo))
+(defun run (&key (log-level :info))
+  (ge:startup `(:engine (:systems (demo)
+                         :log-level ,log-level)
                 :host (:opengl-version (3 3)))))
