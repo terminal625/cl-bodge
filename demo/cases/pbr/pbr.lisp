@@ -1,5 +1,5 @@
 (cl:defpackage :cl-bodge.pbr.demo
-  (:use :cl :cl-bodge.demo.api))
+  (:use :cl :cl-bodge.demo.api :cl-bodge.demo.scene))
 (cl:in-package :cl-bodge.pbr.demo)
 
 (ge.rsc:defresource :scene "/bodge/demo/pbr/DamagedHelmet")
@@ -48,6 +48,9 @@
 (defvar *pbr-pipeline* nil)
 (defvar *model* nil)
 
+
+(defvar *scene* nil)
+(defvar *mesh* nil)
 ;;;
 ;;; SHOWCASE
 ;;;
@@ -68,7 +71,14 @@
 (defmethod showcase-revealing-flow ((this pbr-showcase) ui)
   (ge:>>
    (ge:instantly ()
-     (setf *model* (ge:load-resource "/bodge/demo/pbr/DamagedHelmet")))
+     (setf *model* (ge:load-resource "/bodge/demo/pbr/DamagedHelmet")
+           *scene* (make-simple-scene))
+     (let ((mesh (ge:scene-mesh *model* 0)))
+       (setf *mesh* (add-mesh *scene*
+                              (ge:mesh-position-array mesh)
+                              (ge:mesh-index-array mesh)
+                              (ge:mesh-normal-array mesh)
+                              (ge:mesh-primitive mesh)))))
    (ge:for-graphics ()
      (setf *pbr-pipeline* (ge:make-shader-pipeline 'pbr-pipeline)))))
 
@@ -79,4 +89,9 @@
 
 
 (defmethod render-showcase ((this pbr-showcase))
-  (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0)))
+  (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0))
+  (let ((time (ge.util:real-time-seconds)))
+    (update-drawable *mesh* :transform (ge:mult
+                                        (ge:translation-mat4 (sin time) (cos time) -5)
+                                        (ge:euler-angles->mat4 (ge:vec3 (/ pi 2) 0 pi)))))
+  (render-scene *scene*))

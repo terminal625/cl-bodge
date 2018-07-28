@@ -6,7 +6,8 @@
            #:update-light
            #:update-drawable
            #:add-sphere
-           #:add-box))
+           #:add-box
+           #:add-mesh))
 (cl:in-package :cl-bodge.demo.scene)
 
 
@@ -163,8 +164,7 @@
 
 (defclass sphere (shape) ())
 
-(defun add-sphere (scene &key color position rotation (radius 1.0))
-  (declare (ignore color position rotation))
+(defun add-sphere (scene &key (radius 1.0))
   (with-slots (shapes) scene
     (flet ((vertex-gen ()
              (cl-bodge.demo::generate-sphere-arrays radius 100 100)))
@@ -177,14 +177,25 @@
   (:default-initargs :primitive :triangles))
 
 
-(defun add-box (scene &key color position rotation (x 1) (y 1) (z 1))
-  (declare (ignore color position rotation))
+(defun add-box (scene &key (x 1) (y 1) (z 1))
   (with-slots (shapes) scene
     (flet ((vertex-gen ()
              (cl-bodge.demo::generate-box-arrays x y z)))
       (let ((box (make-instance 'box :vertex-generator #'vertex-gen)))
         (push box shapes)
         box))))
+
+
+(defclass mesh (shape) ())
+
+
+(defun add-mesh (scene position-array index-array normal-array primitive)
+  (with-slots (shapes) scene
+    (flet ((vertex-gen ()
+             (values position-array normal-array index-array)))
+      (let ((mesh (make-instance 'mesh :vertex-generator #'vertex-gen :primitive primitive)))
+        (push mesh shapes)
+        mesh))))
 
 
 (defun %render-scene (scene rendering-fu &optional (output t))
