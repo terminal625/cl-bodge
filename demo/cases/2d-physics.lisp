@@ -50,11 +50,10 @@
       (setf (ge:gravity universe) (ge:vec2 0 -9.81)
             (ge:body-position (ge:shape-body ball)) *ball-position*
             (ge:body-position (ge:shape-body box)) *box-position*))
-     (ge:for-host ()
-       (ge:viewport-size))
-     (ge:for-graphics (viewport-size)
+     (ge:for-graphics ()
        (setf canvas (ge:make-canvas '2d-showcase-canvas
-                                    (ge:x viewport-size) (ge:y viewport-size)))))))
+                                    640 480
+                                    :pixel-ratio (* (/ *viewport-scale*) *viewport-pixel-ratio*)))))))
 
 
 (defmethod showcase-closing-flow ((this 2d-physics-showcase))

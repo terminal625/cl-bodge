@@ -1,5 +1,7 @@
 (cl:in-package :cl-bodge.demo.api)
 
+(defvar *viewport-pixel-ratio* 1f0)
+(defvar *viewport-scale* 1f0)
 
 (defvar *showcases* nil)
 

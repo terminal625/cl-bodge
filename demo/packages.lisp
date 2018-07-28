@@ -1,6 +1,8 @@
 (cl:defpackage :cl-bodge.demo.api
   (:use :cl)
-  (:export #:register-showcase
+  (:export #:*viewport-pixel-ratio*
+           #:*viewport-scale*
+           #:register-showcase
            #:list-showcases
            #:showcase-name
            #:showcase-revealing-flow

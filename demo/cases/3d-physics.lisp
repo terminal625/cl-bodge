@@ -9,7 +9,6 @@
 (register-showcase '3d-physics-showcase)
 
 
-
 (defmethod showcase-name ((this 3d-physics-showcase))
   "3D Physics")
 
