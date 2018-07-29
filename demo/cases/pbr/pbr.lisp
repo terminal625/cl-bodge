@@ -73,19 +73,21 @@
    (ge:instantly ()
      (setf *model* (ge:load-resource "/bodge/demo/pbr/DamagedHelmet")
            *scene* (make-simple-scene))
-     (let ((mesh (ge:scene-mesh *model* 0)))
+     (let ((mesh (ge:scene-resource-mesh *model* 0)))
        (setf *mesh* (add-mesh *scene*
-                              (ge:mesh-position-array mesh)
-                              (ge:mesh-index-array mesh)
-                              (ge:mesh-normal-array mesh)
-                              (ge:mesh-primitive mesh)))))
+                              (ge:mesh-resource-position-array mesh)
+                              (ge:mesh-resource-index-array mesh)
+                              (ge:mesh-resource-normal-array mesh)
+                              (ge:mesh-resource-primitive mesh)))))
    (ge:for-graphics ()
      (setf *pbr-pipeline* (ge:make-shader-pipeline 'pbr-pipeline)))))
 
 
 (defmethod showcase-closing-flow ((this pbr-showcase))
-  (ge:instantly ()
-    (ge:dispose *pbr-pipeline*)))
+  (ge:>> (ge:instantly ()
+           (ge:dispose *pbr-pipeline*))
+         (ge:for-graphics ()
+           (ge:dispose *scene*))))
 
 
 (defmethod render-showcase ((this pbr-showcase))
