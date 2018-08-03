@@ -2,7 +2,6 @@
   (:use :cl :cl-bodge.demo.api :cl-bodge.demo.scene))
 (cl:in-package :cl-bodge.pbr.demo)
 
-(ge.rsc:defresource :scene "/bodge/demo/pbr/DamagedHelmet")
 
 (ge:defshader (pbr-vert
                (:sources "pbr-vert.glsl")
