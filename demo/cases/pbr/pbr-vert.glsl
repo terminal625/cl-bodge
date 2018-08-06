@@ -1,5 +1,9 @@
 #version 330 core
 
+#define HAS_NORMALS 1
+#define HAS_TANGENTS 1
+#define HAS_UV 1
+
 //
 // Adapted from https://github.com/KhronosGroup/glTF-WebGL-PBR/blob/master/shaders/pbr-frag.glsl
 //
@@ -25,12 +29,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-in vec4 a_Position;
+in vec3 a_Position;
 #ifdef HAS_NORMALS
-in vec4 a_Normal;
+in vec3 a_Normal;
 #endif
 #ifdef HAS_TANGENTS
-in vec4 a_Tangent;
+in vec3 a_Tangent;
 #endif
 #ifdef HAS_UV
 in vec2 a_UV;
@@ -38,7 +42,7 @@ in vec2 a_UV;
 
 uniform mat4 u_MVPMatrix;
 uniform mat4 u_ModelMatrix;
-uniform mat4 u_NormalMatrix;
+uniform mat3 u_NormalMatrix;
 
 out vec3 v_Position;
 out vec2 v_UV;
@@ -54,17 +58,17 @@ out vec3 v_Normal;
 
 void main()
 {
-  vec4 pos = u_ModelMatrix * a_Position;
+  vec4 pos = u_ModelMatrix * vec4(a_Position, 1.0);
   v_Position = vec3(pos.xyz) / pos.w;
 
   #ifdef HAS_NORMALS
   #ifdef HAS_TANGENTS
-  vec3 normalW = normalize(vec3(u_NormalMatrix * vec4(a_Normal.xyz, 0.0)));
-  vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(a_Tangent.xyz, 0.0)));
-  vec3 bitangentW = cross(normalW, tangentW) * a_Tangent.w;
+  vec3 normalW = normalize(vec3(u_NormalMatrix * a_Normal));
+  vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(a_Tangent, 0.0)));
+  vec3 bitangentW = cross(normalW, tangentW);
   v_TBN = mat3(tangentW, bitangentW, normalW);
   #else // HAS_TANGENTS != 1
-  v_Normal = normalize(vec3(u_ModelMatrix * vec4(a_Normal.xyz, 0.0)));
+  v_Normal = normalize(vec3(u_ModelMatrix * vec4(a_Normal, 0.0)));
   #endif
   #endif
 
@@ -74,5 +78,5 @@ void main()
   v_UV = vec2(0.,0.);
   #endif
 
-  gl_Position = u_MVPMatrix * a_Position; // needs w for proper perspective correction
+  gl_Position = u_MVPMatrix * vec4(a_Position, 1.0); // needs w for proper perspective correction
 }

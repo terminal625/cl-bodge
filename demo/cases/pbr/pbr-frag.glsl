@@ -1,5 +1,15 @@
 #version 330 core
 
+#define HAS_TANGENTS 1
+#define HAS_UV 1
+#define HAS_NORMALS 1
+
+#define HAS_BASECOLORMAP 1
+#define HAS_NORMALMAP 1
+#define HAS_EMISSIVEMAP 1
+#define HAS_METALROUGHNESSMAP 1
+#define HAS_OCCLUSIONMAP 1
+
 //
 // Adapted from https://github.com/KhronosGroup/glTF-WebGL-PBR/blob/master/shaders/pbr-frag.glsl
 //
@@ -327,6 +337,7 @@ void main()
 
     // This section uses mix to override final color for reference app visualization
     // of various parameters in the lighting equation.
+    /*
     color = mix(color, F, u_ScaleFGDSpec.x);
     color = mix(color, vec3(G), u_ScaleFGDSpec.y);
     color = mix(color, vec3(D), u_ScaleFGDSpec.z);
@@ -336,6 +347,7 @@ void main()
     color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
     color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
     color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
+    */
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 }

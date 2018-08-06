@@ -42,7 +42,6 @@ uniform vec2 nearFar;
 
 out vec4 fColor;
 
-
 void main() {
   if (inShadow(position.xyz - light.position.xyz, shadowMap, nearFar.x, nearFar.y, 0.0001)) {
     fColor = vec4(emissionColor + light.ambient * diffuseColor, 1.0);
