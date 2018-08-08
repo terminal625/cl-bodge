@@ -10,6 +10,9 @@
 #define HAS_METALROUGHNESSMAP 1
 #define HAS_OCCLUSIONMAP 1
 
+#define USE_IBL 1
+#define USE_TEX_LOD 1
+
 //
 // Adapted from https://github.com/KhronosGroup/glTF-WebGL-PBR/blob/master/shaders/pbr-frag.glsl
 //
@@ -184,7 +187,7 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     vec3 diffuseLight = SRGBtoLINEAR(textureCube(u_DiffuseEnvSampler, n)).rgb;
 
 #ifdef USE_TEX_LOD
-    vec3 specularLight = SRGBtoLINEAR(textureCubeLodEXT(u_SpecularEnvSampler, reflection, lod)).rgb;
+    vec3 specularLight = SRGBtoLINEAR(textureCubeLod(u_SpecularEnvSampler, reflection, lod)).rgb;
 #else
     vec3 specularLight = SRGBtoLINEAR(textureCube(u_SpecularEnvSampler, reflection)).rgb;
 #endif
@@ -337,7 +340,6 @@ void main()
 
     // This section uses mix to override final color for reference app visualization
     // of various parameters in the lighting equation.
-    /*
     color = mix(color, F, u_ScaleFGDSpec.x);
     color = mix(color, vec3(G), u_ScaleFGDSpec.y);
     color = mix(color, vec3(D), u_ScaleFGDSpec.z);
@@ -347,7 +349,6 @@ void main()
     color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
     color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
     color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
-    */
 
     gl_FragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
 }
