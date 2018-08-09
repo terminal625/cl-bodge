@@ -12,13 +12,18 @@
 
 (defvar *showcases* nil)
 
-(defun register-showcase (class)
-  (pushnew class *showcases*))
+(defun register-showcase (class name)
+  (pushnew (cons class name) *showcases* :key #'car))
 
 (defun list-showcases ()
   (reverse *showcases*))
 
-(defgeneric showcase-name (case-manager))
+
+(defun showcase-class (showcase)
+  (car showcase))
+
+(defun showcase-name (showcase)
+  (cdr showcase))
 
 (defgeneric showcase-revealing-flow (case-manager ui))
 (defgeneric showcase-closing-flow (case-manager))

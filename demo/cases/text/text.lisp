@@ -12,11 +12,7 @@
   (ge:mount-container "/bodge/demo/text/" (merge-showcase-pathname "text/assets/NotoSans-Regular.brf")))
 
 
-(register-showcase 'text-showcase)
-
-
-(defmethod showcase-name ((this text-showcase))
-  "SDF Text")
+(register-showcase 'text-showcase "SDF Text")
 
 
 (defmethod showcase-revealing-flow ((this text-showcase) ui)

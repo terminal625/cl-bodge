@@ -60,13 +60,13 @@
                            :scale *viewport-scale*)
             *loading-screen-canvas* (ge:make-canvas 'loading-screen *ui-width* *ui-height*))
       (let ((main-window (ge:add-window 'main-menu :ui ui :origin (ge:vec2 100 100))))
-        (loop for case-class in (list-showcases)
-              do (let ((showcase (make-instance case-class)))
+        (loop for case-object in (list-showcases)
+              do (let ((showcase-class (showcase-class case-object)))
                    (flet ((switch-showcase (win event)
                             (declare (ignore win event))
-                            (setf next-showcase showcase)))
+                            (setf next-showcase (make-instance showcase-class))))
                      (let ((button (make-instance 'ge:button
-                                                  :label (showcase-name showcase)
+                                                  :label (showcase-name case-object)
                                                   :on-click #'switch-showcase)))
                        (ge:adopt main-window button)))))))))
 

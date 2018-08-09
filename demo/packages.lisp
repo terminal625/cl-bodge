@@ -7,6 +7,7 @@
            #:register-showcase
            #:list-showcases
            #:showcase-name
+           #:showcase-class
            #:showcase-revealing-flow
            #:showcase-closing-flow
            #:render-showcase

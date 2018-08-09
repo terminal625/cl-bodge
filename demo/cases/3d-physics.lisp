@@ -6,11 +6,7 @@
 (defclass 3d-physics-showcase ()
   (scene universe bulb
    (objects :initform nil)))
-(register-showcase '3d-physics-showcase)
-
-
-(defmethod showcase-name ((this 3d-physics-showcase))
-  "3D Physics")
+(register-showcase '3d-physics-showcase "3D Physics")
 
 
 (defclass demo-object (ge:disposable)

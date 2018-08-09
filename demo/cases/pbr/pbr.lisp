@@ -54,19 +54,18 @@
   :fragment pbr-frag)
 
 
-(defvar *pbr-pipeline* nil)
-(defvar *scene* nil)
-(defvar *ibl-brdf-lut-tex* nil)
-(defvar *ibl-diffuse-cubemap* nil)
-(defvar *ibl-specular-cubemap* nil)
-
 (defparameter *projection-matrix* (ge:perspective-projection-mat 1 (/ 600 800) 1 10))
 
 
 ;;;
 ;;; SHOWCASE
 ;;;
-(defclass pbr-showcase () ())
+(defclass pbr-showcase ()
+  ((pipeline :initform nil)
+   (scene :initform nil)
+   (brdf-tex :initform nil)
+   (ibl-diffuse :initform nil)
+   (ibl-specular :initform nil)))
 
 
 (defmethod initialize-instance :after ((this pbr-showcase) &key)
@@ -74,94 +73,91 @@
   (ge:mount-filesystem "/bodge/demo/pbr/assets/" (merge-showcase-pathname "pbr/assets/")))
 
 
-(register-showcase 'pbr-showcase)
-
-
-(defmethod showcase-name ((this pbr-showcase))
-  "PBR")
+(register-showcase 'pbr-showcase "PBR")
 
 
 (defmethod showcase-revealing-flow ((this pbr-showcase) ui)
-  (ge:instantly ()
-    (ge:run (ge:for-shared-graphics ()
-              (setf *scene* (make-instance 'pbr-scene
-                                           :resource (ge:load-resource "/bodge/demo/pbr/helmet/DamagedHelmet")
-                                           :base-path "/bodge/demo/pbr/helmet/")
-                    *ibl-brdf-lut-tex* (load-brdf-texture)
-                    *ibl-diffuse-cubemap* (load-diffuse-ibl-cubemap)
-                    *ibl-specular-cubemap* (load-specular-ibl-cubemap)
-                    *pbr-pipeline* (ge:make-shader-pipeline 'pbr-pipeline))))))
-
-
-(defmacro dispose-and-nullify (object)
-  (alexandria:once-only ((o object))
-    `(when ,o
-       (ge:dispose ,o)
-       (setf ,object nil))))
+  (with-slots (pipeline scene brdf-tex ibl-diffuse ibl-specular) this
+    (ge:instantly ()
+      (ge:run
+       (ge:for-shared-graphics ()
+         (setf scene (make-instance 'pbr-scene
+                                    :resource (ge:load-resource "/bodge/demo/pbr/helmet/DamagedHelmet")
+                                    :base-path "/bodge/demo/pbr/helmet/")
+               brdf-tex (load-brdf-texture)
+               ibl-diffuse (load-diffuse-ibl-cubemap)
+               ibl-specular (load-specular-ibl-cubemap)
+               pipeline (ge:make-shader-pipeline 'pbr-pipeline)))))))
 
 
 (defmethod showcase-closing-flow ((this pbr-showcase))
-  (dispose-and-nullify *pbr-pipeline*)
-  (dispose-and-nullify *scene*)
-  (dispose-and-nullify *ibl-brdf-lut-tex*)
-  (dispose-and-nullify *ibl-diffuse-cubemap*)
-  (dispose-and-nullify *ibl-specular-cubemap*))
+  (with-slots (pipeline scene brdf-tex ibl-diffuse ibl-specular) this
+    (ge:instantly ()
+      (ge:run
+       (ge:for-shared-graphics ()
+         (ge:dispose pipeline)
+         (ge:dispose scene)
+         (ge:dispose brdf-tex)
+         (ge:dispose ibl-diffuse)
+         (ge:dispose ibl-specular))))))
 
 
-(defun render-helmet ()
-  (let* ((time (ge.util:epoch-seconds))
-         (model-mat (ge:mult (ge:translation-mat4 0.3 0 -4)
-                             (ge:euler-angles->mat4 (ge:vec3 (+ (/ pi 2) (/ (sin time) 2))
-                                                             0
-                                                             (+ pi (/ (cos time) 0.5))))))
-         (view-mat (ge:identity-mat4))
-         (view-model-mat (ge:mult view-mat model-mat))
-         (mvp (ge:mult *projection-matrix*
-                       view-model-mat))
-         (normal-mat (ge:inverse (ge:transpose (ge:mat4->mat3 (ge:mult view-model-mat))))))
-    (do-scene-meshes (mesh id *scene*)
-      (ge:render t *pbr-pipeline*
-                 :primitive (primitive-of mesh)
-                 :index-buffer (index-array-of mesh)
-                 'position (position-array-of mesh)
-                 'normal (normal-array-of mesh)
-                 'tangent (tangent-array-of mesh)
-                 'uv (tex-coord-array-of mesh)
+(defun render-helmet (this)
+  (with-slots (pipeline scene brdf-tex ibl-diffuse ibl-specular) this
+    (let* ((time (ge.util:epoch-seconds))
+           (model-mat (ge:mult (ge:translation-mat4 0.3 0 -4)
+                               (ge:euler-angles->mat4 (ge:vec3 (+ (/ pi 2) (/ (sin time) 2))
+                                                               0
+                                                               (+ pi (/ (cos time) 0.5))))))
+           (view-mat (ge:identity-mat4))
+           (view-model-mat (ge:mult view-mat model-mat))
+           (mvp (ge:mult *projection-matrix*
+                         view-model-mat))
+           (normal-mat (ge:inverse (ge:transpose (ge:mat4->mat3 (ge:mult view-model-mat))))))
+      (do-scene-meshes (mesh id scene)
+        (ge:render t pipeline
+                   :primitive (primitive-of mesh)
+                   :index-buffer (index-array-of mesh)
+                   'position (position-array-of mesh)
+                   'normal (normal-array-of mesh)
+                   'tangent (tangent-array-of mesh)
+                   'uv (tex-coord-array-of mesh)
 
-                 'mvp mvp
-                 'model-mat model-mat
-                 'normal-mat normal-mat
+                   'mvp mvp
+                   'model-mat model-mat
+                   'normal-mat normal-mat
 
-                 'light-direction (ge:vec3 0 1 0)
-                 'light-color (ge:vec3 1.0 1.0 1.0)
-                 'camera (ge:vec3 0 0 0)
+                   'light-direction (ge:vec3 0 1 0)
+                   'light-color (ge:vec3 1.0 1.0 1.0)
+                   'camera (ge:vec3 0 0 0)
 
-                 'base-color-factor (ge:vec4 1.0 1.0 1.0 1.0)
-                 'base-color-sampler (scene-texture *scene* "Default_albedo.jpg")
+                   'base-color-factor (ge:vec4 1.0 1.0 1.0 1.0)
+                   'base-color-sampler (scene-texture scene "Default_albedo.jpg")
 
-                 'normal-sampler (scene-texture *scene* "Default_normal.jpg")
-                 'normal-scale 1f0
+                   'normal-sampler (scene-texture scene "Default_normal.jpg")
+                   'normal-scale 1f0
 
-                 'emissive-sampler (scene-texture *scene* "Default_emissive.jpg")
-                 'emissive-factor (ge:vec3 0.7 0.7 0.7)
+                   'emissive-sampler (scene-texture scene "Default_emissive.jpg")
+                   'emissive-factor (ge:vec3 0.7 0.7 0.7)
 
-                 'metallic-roughness-sampler (scene-texture *scene* "Default_metalRoughness.jpg")
-                 'metallic-roughness-values (ge:vec2 1.0 1.0)
+                   'metallic-roughness-sampler (scene-texture scene "Default_metalRoughness.jpg")
+                   'metallic-roughness-values (ge:vec2 1.0 1.0)
 
-                 'occlusion-sampler (scene-texture *scene* "Default_AO.jpg")
-                 'occlusion-strength 1f0
+                   'occlusion-sampler (scene-texture scene "Default_AO.jpg")
+                   'occlusion-strength 1f0
 
-                 'diffuse-env-sampler *ibl-diffuse-cubemap*
-                 'specular-env-sampler *ibl-specular-cubemap*
-                 'brdf-lut *ibl-brdf-lut-tex*
+                   'diffuse-env-sampler ibl-diffuse
+                   'specular-env-sampler ibl-specular
+                   'brdf-lut brdf-tex
 
-                 'scale-diff-base *scale-diff-base*
-                 'scale-fgd-spec *scale-fgd-spec*
-                 'scale-ibl-ambient *scale-ibl-ambient*))))
+                   'scale-diff-base *scale-diff-base*
+                   'scale-fgd-spec *scale-fgd-spec*
+                   'scale-ibl-ambient *scale-ibl-ambient*)))))
 
 
 (defmethod render-showcase ((this pbr-showcase))
-  (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0))
-  (if *pbr-pipeline*
-      (render-helmet)
-      (render-loading-screen (ge:vec4 1 1 1 1))))
+  (with-slots (pipeline) this
+    (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0))
+    (if pipeline
+        (render-helmet this)
+        (render-loading-screen (ge:vec4 1 1 1 1)))))

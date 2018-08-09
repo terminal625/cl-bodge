@@ -83,11 +83,7 @@
 (defclass ui-showcase ()
   ((window :initform nil)
    (ui :initform nil)))
-(register-showcase 'ui-showcase)
-
-
-(defmethod showcase-name ((this ui-showcase))
-  "UI")
+(register-showcase 'ui-showcase "UI")
 
 
 (defmethod showcase-revealing-flow ((this ui-showcase) ui)

@@ -11,7 +11,7 @@
 
 (defun load-brdf-texture ()
   (ge:make-2d-texture (ge:load-resource (merge-asset-name "brdfLUT.png")
-                                        (ge:make-resource-handler :png-image))
+                                        (ge:make-image-resource-handler :png))
                       :rgb))
 
 
@@ -19,7 +19,7 @@
   (flet ((image-name (suffix)
            (merge-asset-name "papermill/diffuse/"
                              (format nil "diffuse_~A_0.jpg" suffix))))
-    (let* ((jpg-handler (ge:make-resource-handler :jpeg-image))
+    (let* ((jpg-handler (ge:make-image-resource-handler :jpeg))
            (back (ge:load-resource (image-name "back") jpg-handler))
            (bottom (ge:load-resource (image-name "bottom") jpg-handler))
            (front (ge:load-resource (image-name "front") jpg-handler))
@@ -33,7 +33,7 @@
   (flet ((image-name (suffix level)
            (merge-asset-name "papermill/specular/"
                              (format nil "specular_~A_~A.jpg" suffix level))))
-    (let* ((jpg-handler (ge:make-resource-handler :jpeg-image))
+    (let* ((jpg-handler (ge:make-image-resource-handler :jpeg))
            (back (ge:load-resource (image-name "back" 0) jpg-handler))
            (bottom (ge:load-resource (image-name "bottom" 0) jpg-handler))
            (front (ge:load-resource (image-name "front" 0) jpg-handler))

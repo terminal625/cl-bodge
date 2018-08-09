@@ -6,11 +6,7 @@
 (defclass framebuffers-showcase () ())
 
 
-(register-showcase 'framebuffers-showcase)
-
-
-(defmethod showcase-name ((this framebuffers-showcase))
-  "Framebuffers")
+(register-showcase 'framebuffers-showcase "Framebuffers")
 
 
 (defvar *box* nil)

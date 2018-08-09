@@ -15,12 +15,7 @@
 (defclass 2d-physics-showcase ()
   (universe ground ball box canvas))
 
-
-(register-showcase '2d-physics-showcase)
-
-
-(defmethod showcase-name ((this 2d-physics-showcase))
-  "2D Physics")
+(register-showcase '2d-physics-showcase "2D Physics")
 
 
 (ge:defwindow 2d-physics-panel)
