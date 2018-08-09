@@ -61,7 +61,7 @@
 ;;; SHOWCASE
 ;;;
 (defclass pbr-showcase ()
-  ((pipeline :initform nil)
+  ((pipeline :initform (ge:make-guarded-reference nil))
    (scene :initform nil)
    (brdf-tex :initform nil)
    (ibl-diffuse :initform nil)
@@ -80,30 +80,37 @@
   (with-slots (pipeline scene brdf-tex ibl-diffuse ibl-specular) this
     (ge:instantly ()
       (ge:run
-       (ge:for-shared-graphics ()
-         (setf scene (make-instance 'pbr-scene
-                                    :resource (ge:load-resource "/bodge/demo/pbr/helmet/DamagedHelmet")
-                                    :base-path "/bodge/demo/pbr/helmet/")
-               brdf-tex (load-brdf-texture)
-               ibl-diffuse (load-diffuse-ibl-cubemap)
-               ibl-specular (load-specular-ibl-cubemap)
-               pipeline (ge:make-shader-pipeline 'pbr-pipeline)))))))
+       (ge:>>
+        (ge:for-shared-graphics ()
+          (setf scene (make-instance 'pbr-scene
+                                     :resource (ge:load-resource "/bodge/demo/pbr/helmet/DamagedHelmet")
+                                     :base-path "/bodge/demo/pbr/helmet/")
+                brdf-tex (load-brdf-texture)
+                ibl-diffuse (load-diffuse-ibl-cubemap)
+                ibl-specular (load-specular-ibl-cubemap)))
+        (ge:for-graphics ()
+          (mt:with-guarded-reference (pipeline)
+            (setf pipeline (ge:make-shader-pipeline 'pbr-pipeline)))))))))
 
 
 (defmethod showcase-closing-flow ((this pbr-showcase))
   (with-slots (pipeline scene brdf-tex ibl-diffuse ibl-specular) this
     (ge:instantly ()
       (ge:run
-       (ge:for-shared-graphics ()
-         (ge:dispose pipeline)
-         (ge:dispose scene)
-         (ge:dispose brdf-tex)
-         (ge:dispose ibl-diffuse)
-         (ge:dispose ibl-specular))))))
+       (ge:>>
+        (ge:for-graphics ()
+          (mt:with-guarded-reference (pipeline)
+            (ge:dispose pipeline)
+            (setf pipeline nil)))
+        (ge:for-shared-graphics ()
+          (ge:dispose scene)
+          (ge:dispose brdf-tex)
+          (ge:dispose ibl-diffuse)
+          (ge:dispose ibl-specular)))))))
 
 
-(defun render-helmet (this)
-  (with-slots (pipeline scene brdf-tex ibl-diffuse ibl-specular) this
+(defun render-helmet (this pipeline)
+  (with-slots (scene brdf-tex ibl-diffuse ibl-specular) this
     (let* ((time (ge.util:epoch-seconds))
            (model-mat (ge:mult (ge:translation-mat4 0.3 0 -4)
                                (ge:euler-angles->mat4 (ge:vec3 (+ (/ pi 2) (/ (sin time) 2))
@@ -158,6 +165,7 @@
 (defmethod render-showcase ((this pbr-showcase))
   (with-slots (pipeline) this
     (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0))
-    (if pipeline
-        (render-helmet this)
-        (render-loading-screen (ge:vec4 1 1 1 1)))))
+    (ge:with-guarded-reference (pipeline)
+      (if pipeline
+          (render-helmet this pipeline)
+          (render-loading-screen (ge:vec4 1 1 1 1))))))

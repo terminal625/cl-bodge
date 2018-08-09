@@ -62,7 +62,7 @@
     (ge:do-scene-resource-materials (material id resource)
       (setf (gethash id material-table) (make-instance 'pbr-material :resource material))
       (ge:do-material-resource-textures (texture type id material)
-        (let ((texture-name (namestring (uiop:enough-pathname (ge:texture-resource-name texture) "/"))))
+        (let ((texture-name (namestring (ge:texture-resource-name texture))))
           (unless (gethash texture-name texture-table)
             (let ((image (ge:load-resource (fad:merge-pathnames-as-file base-path texture-name))))
               (setf (gethash texture-name texture-table) (ge:make-2d-texture image :rgb)))))))))
