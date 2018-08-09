@@ -2,6 +2,7 @@
 
 (defvar *viewport-pixel-ratio* 1f0)
 (defvar *viewport-scale* 1f0)
+(defvar *loading-screen-canvas*)
 
 (defun merge-showcase-pathname (pathname)
   (merge-pathnames pathname
@@ -24,3 +25,7 @@
 
 (defgeneric render-showcase (case-manager)
   (:method (case-manager) (declare (ignore case-manager))))
+
+
+(defun render-loading-screen (color)
+  (ge:render t *loading-screen-canvas* :color color))

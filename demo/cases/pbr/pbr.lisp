@@ -82,25 +82,33 @@
 
 
 (defmethod showcase-revealing-flow ((this pbr-showcase) ui)
-  (ge:for-graphics ()
-    (setf *scene* (make-instance 'pbr-scene :resource (ge:load-resource "/bodge/demo/pbr/helmet/DamagedHelmet")
-                                            :base-path "/bodge/demo/pbr/helmet/")
-          *ibl-brdf-lut-tex* (load-brdf-texture)
-          *ibl-diffuse-cubemap* (load-diffuse-ibl-cubemap)
-          *ibl-specular-cubemap* (load-specular-ibl-cubemap)
-          *pbr-pipeline* (ge:make-shader-pipeline 'pbr-pipeline))))
+  (ge:instantly ()
+    (ge:run (ge:for-shared-graphics ()
+              (setf *scene* (make-instance 'pbr-scene
+                                           :resource (ge:load-resource "/bodge/demo/pbr/helmet/DamagedHelmet")
+                                           :base-path "/bodge/demo/pbr/helmet/")
+                    *ibl-brdf-lut-tex* (load-brdf-texture)
+                    *ibl-diffuse-cubemap* (load-diffuse-ibl-cubemap)
+                    *ibl-specular-cubemap* (load-specular-ibl-cubemap)
+                    *pbr-pipeline* (ge:make-shader-pipeline 'pbr-pipeline))))))
+
+
+(defmacro dispose-and-nullify (object)
+  (alexandria:once-only ((o object))
+    `(when ,o
+       (ge:dispose ,o)
+       (setf ,object nil))))
 
 
 (defmethod showcase-closing-flow ((this pbr-showcase))
-  (ge:dispose *pbr-pipeline*)
-  (ge:dispose *scene*)
-  (ge:dispose *ibl-brdf-lut-tex*)
-  (ge:dispose *ibl-diffuse-cubemap*)
-  (ge:dispose *ibl-specular-cubemap*))
+  (dispose-and-nullify *pbr-pipeline*)
+  (dispose-and-nullify *scene*)
+  (dispose-and-nullify *ibl-brdf-lut-tex*)
+  (dispose-and-nullify *ibl-diffuse-cubemap*)
+  (dispose-and-nullify *ibl-specular-cubemap*))
 
 
-(defmethod render-showcase ((this pbr-showcase))
-  (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0))
+(defun render-helmet ()
   (let* ((time (ge.util:epoch-seconds))
          (model-mat (ge:mult (ge:translation-mat4 0.3 0 -4)
                              (ge:euler-angles->mat4 (ge:vec3 (+ (/ pi 2) (/ (sin time) 2))
@@ -150,3 +158,10 @@
                  'scale-diff-base *scale-diff-base*
                  'scale-fgd-spec *scale-fgd-spec*
                  'scale-ibl-ambient *scale-ibl-ambient*))))
+
+
+(defmethod render-showcase ((this pbr-showcase))
+  (ge:clear-rendering-output t :color (ge:vec4 0.2 0.2 0.2 1.0))
+  (if *pbr-pipeline*
+      (render-helmet)
+      (render-loading-screen (ge:vec4 1 1 1 1))))

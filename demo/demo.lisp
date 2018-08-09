@@ -17,6 +17,19 @@
                                    ge:graphics-system ge:audio-system)))
 
 
+(ge:defcanvas loading-screen (color)
+  (ge:translate-canvas 310 300)
+  (labels ((wave (shift)
+             (let ((time (* (ge.util:epoch-seconds) 4)))
+               (* (cos (* (+ time shift) 6)) 2)))
+           (draw-letter (shift letter)
+             (ge:draw-text (ge:vec2 (* 10 shift) (wave shift)) letter :fill-color color)))
+    (ge:scale-canvas 2 2)
+    (loop for letter across #("L" "O" "A" "D" "I" "N" "G")
+          for i from 0
+          do (draw-letter i letter))))
+
+
 (defun render (demo)
   (with-slots (ui active-showcase) demo
     (ge:clear-rendering-output t)
@@ -44,7 +57,8 @@
       (setf ui (ge:make-ui *ui-width* *ui-height*
                            :input-source input-source
                            :pixel-ratio *viewport-pixel-ratio*
-                           :scale *viewport-scale*))
+                           :scale *viewport-scale*)
+            *loading-screen-canvas* (ge:make-canvas 'loading-screen *ui-width* *ui-height*))
       (let ((main-window (ge:add-window 'main-menu :ui ui :origin (ge:vec2 100 100))))
         (loop for case-class in (list-showcases)
               do (let ((showcase (make-instance case-class)))
@@ -63,6 +77,7 @@
 
 
 (defun init-host (this)
+  (declare (ignore this))
   (scale-viewport)
   (let ((viewport-size (ge:viewport-size))
         (framebuffer-size (ge:framebuffer-size)))
@@ -79,7 +94,9 @@
 
 (defun update-ui-pixel-ratio (demo pixel-ratio)
   (with-slots (ui) demo
-    (ge:update-ui-pixel-ratio ui (setf *viewport-pixel-ratio* (* (/ *viewport-scale*) pixel-ratio)))))
+    (setf *viewport-pixel-ratio* (* (/ *viewport-scale*) pixel-ratio))
+    (ge:update-ui-pixel-ratio ui *viewport-pixel-ratio*)
+    (ge:update-canvas-pixel-ratio *loading-screen-canvas* *viewport-pixel-ratio*)))
 
 
 (ge:define-event-handler on-window-size-change ((evt ge:viewport-size-change-event) width height)
@@ -108,9 +125,16 @@
     (when next-showcase
       (flow:serially
        (cleanup-flow this)
-       (prog1 (showcase-revealing-flow next-showcase ui)
+       (showcase-revealing-flow next-showcase ui)
+       (ge:instantly ()
          (setf active-showcase next-showcase
                next-showcase nil))))))
+
+
+(defun cleanup-demo (this)
+  (with-slots (ui) this
+    (ge:dispose ui)
+    (ge:dispose *loading-screen-canvas*)))
 
 
 (defmethod ge:initialize-system :after ((this demo))
@@ -133,7 +157,9 @@
                (switch-showcase-if-requested this)))
             (lambda () (ge:enabledp this)))
            (flow:dynamically ()
-             (cleanup-flow this)))))
+             (cleanup-flow this))
+           (ge:instantly ()
+             (cleanup-demo this)))))
 
 
 (ge:define-event-handler exit-handler ((eve ge:viewport-hiding-event))
