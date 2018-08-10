@@ -1,5 +1,10 @@
 (cl:in-package :cl-bodge.pbr.demo)
 
+;;;
+;;; This demo uses DamagedHelmet model from https://github.com/KhronosGroup/glTF-WebGL-PBR
+;;;
+;;; Model: https://sketchfab.com/models/b81008d513954189a063ff901f7abfe4
+;;;
 
 (ge:defshader (pbr-vert
                (:sources "pbr-vert.glsl")
