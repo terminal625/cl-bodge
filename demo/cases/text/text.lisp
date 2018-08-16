@@ -40,5 +40,5 @@
       (ge:render-text t pipeline text
                       :scale 3f0
                       :base-color (ge:vec4 0.5 0.75 1 1)
-                      :mvp-matrix (ge:mult proj (ge:translation-mat4 -200 0 z-distance))))
+                      :mvp-matrix (ge:mult proj (ge:translation-mat4-homo -200 0 z-distance))))
     (ge:print-text text-renderer "Uninspiring text" :position (ge:vec2 310 500))))

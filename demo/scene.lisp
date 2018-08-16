@@ -70,8 +70,8 @@
 
 (defun update-view (scene &key (position (ge:vec3 0 0 0)) (rotation (ge:vec3 0 0 0)))
   (with-slots (view) scene
-    (setf view (ge:mult (ge:vec->translation-mat4 position)
-                        (ge:euler-angles->mat4 rotation)))))
+    (setf view (ge:mult (ge:vec->translation-mat4-homo position)
+                        (ge:euler-angles->mat4-homo rotation)))))
 
 
 (defun update-light (scene &key color position)
@@ -213,9 +213,9 @@
                                                                 (ge:x *near-far*)
                                                                 (ge:y *near-far*))
                                  rotation
-                                 (ge:translation-mat4 (ge:x light-position)
-                                                      (ge:y light-position)
-                                                      (ge:z light-position)))))
+                                 (ge:translation-mat4-homo (ge:x light-position)
+                                                           (ge:y light-position)
+                                                           (ge:z light-position)))))
       (%render-scene scene #'render-shape-depth shadow-layer))))
 
 

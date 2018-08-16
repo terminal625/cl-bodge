@@ -28,8 +28,8 @@
   (with-slots (drawable shape) object
     (let ((body (ge:shape-body shape)))
       (update-drawable drawable
-                       :transform (ge:mult (ge:vec->translation-mat4 (ge:body-position body))
-                                           (ge:mat3->mat4 (ge:body-rotation body)))))))
+                       :transform (ge:mult (ge:vec->translation-mat4-homo (ge:body-position body))
+                                           (ge:value->mat4 (ge:body-rotation body) :33 1f0))))))
 
 
 (defun transform-object (object position-vec rotation-vec)

@@ -26,7 +26,7 @@
 (defvar *cubemap-texture* nil)
 (defvar *depth-cubemap-texture* nil)
 
-(defparameter *view-matrix* (ge:translation-mat4 0 0 -1))
+(defparameter *view-matrix* (ge:translation-mat4-homo 0 0 -1))
 (defparameter *projection-matrix* (ge:perspective-projection-mat 1 (/ 480 640) 1 10))
 
 
@@ -88,10 +88,10 @@
   (ge:clear-rendering-output output :color (ge:vec4 0.2 0.2 0.2 1))
   (update-drawable *scene-box*
                    :transform (ge:mult
-                               (ge:translation-mat4 (* 0.5 (sin time))
-                                                    (* 0.5 (cos time))
-                                                    -3)
-                               (ge:euler-angles->mat4 (ge:vec3 time (sin time) time))))
+                               (ge:translation-mat4-homo (* 0.5 (sin time))
+                                                         (* 0.5 (cos time))
+                                                         -3)
+                               (ge:euler-angles->mat4-homo (ge:vec3 time (sin time) time))))
   (render-scene *scene-1* output))
 
 
@@ -105,9 +105,9 @@
 
 (defun render-scene-2 (output time)
   (ge:clear-rendering-output output :color (ge:vec4 0.2 0.2 0.2 1))
-  (update-drawable *scene-ball* :transform (ge:translation-mat4 (* 0.9 (cos (* time 2)))
-                                                                (* 0.9 (sin (* time 2)))
-                                                                -4.5))
+  (update-drawable *scene-ball* :transform (ge:translation-mat4-homo (* 0.9 (cos (* time 2)))
+                                                                     (* 0.9 (sin (* time 2)))
+                                                                     -4.5))
   (render-scene *scene-2* output))
 
 
@@ -175,7 +175,7 @@
                                                1))
 
     ;; main box
-    (render-box *box* t (ge:mult (ge:translation-mat4 0.3 0 -2)
-                                 (ge:euler-angles->mat4 (ge:vec3 (* 0.2 time)
-                                                                 (* 0.4 time)
-                                                                 (* 0.6 time)))))))
+    (render-box *box* t (ge:mult (ge:translation-mat4-homo 0.3 0 -2)
+                                 (ge:euler-angles->mat4-homo (ge:vec3 (* 0.2 time)
+                                                                      (* 0.4 time)
+                                                                      (* 0.6 time)))))))

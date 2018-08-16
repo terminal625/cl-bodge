@@ -117,15 +117,15 @@
 (defun render-helmet (this pipeline)
   (with-slots (scene brdf-tex ibl-diffuse ibl-specular) this
     (let* ((time (ge.util:epoch-seconds))
-           (model-mat (ge:mult (ge:translation-mat4 0.3 0 -4)
-                               (ge:euler-angles->mat4 (ge:vec3 (+ (/ pi 2) (/ (sin time) 2))
-                                                               0
-                                                               (+ pi (/ (cos time) 0.5))))))
+           (model-mat (ge:mult (ge:translation-mat4-homo 0.3 0 -4)
+                               (ge:euler-angles->mat4-homo (ge:vec3 (+ (/ pi 2) (/ (sin time) 2))
+                                                                    0
+                                                                    (+ pi (/ (cos time) 0.5))))))
            (view-mat (ge:identity-mat4))
            (view-model-mat (ge:mult view-mat model-mat))
            (mvp (ge:mult *projection-matrix*
                          view-model-mat))
-           (normal-mat (ge:inverse (ge:transpose (ge:mat4->mat3 (ge:mult view-model-mat))))))
+           (normal-mat (ge:inverse (ge:transpose (ge:value->mat3 (ge:mult view-model-mat))))))
       (do-scene-meshes (mesh id scene)
         (ge:render t pipeline
                    :primitive (primitive-of mesh)
