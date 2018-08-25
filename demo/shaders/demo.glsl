@@ -1,7 +1,7 @@
 #version 330 core
 
-#include <bodge/phong>
-#include <bodge/shadow>
+#pragma bodge: include bodge/phong
+#pragma bodge: include bodge/shadow
 
 uniform mat4 view;
 
