@@ -46,7 +46,7 @@
 
 
 (defun push-task (task)
-  (alexandria:when-let (demo (ge:engine-system 'demo))
+  (alexandria:when-let (demo (ge:engine-system 'demo nil))
     (ge:push-task task (%task-queue-of demo))))
 
 
